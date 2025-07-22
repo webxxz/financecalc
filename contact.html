@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us | FinanceCalc India</title>
+  <link rel="stylesheet" href="all_calculators_style.css" />
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Contact Us</h2>
+    <p>Have a question, feedback, or feature request? Fill out the form below – we’ll get back to you soon!</p>
+
+    <form action="https://formsubmit.co/support@financecalc.app" method="POST" class="contact-form">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://financecalc.app/thank-you.html">
+
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" name="name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Your Email</label>
+        <input type="email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="message">Your Message</label>
+        <textarea name="message" rows="5" required></textarea>
+      </div>
+
+      <button type="submit">Send Message</button>
+    </form>
+  </div>
+</body>
+
+</html>
