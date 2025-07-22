@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recurring Deposit (RD) Calculator India - Maturity Amount & Interest</title>
+    <meta name="author" content="FinanceCalc.in">
+    <meta name="description" content="Calculate the maturity amount and total interest earned on your Recurring Deposit (RD) in India. Our RD calculator helps you plan your recurring investments.">
+    <meta name="keywords" content="RD calculator, recurring deposit, RD interest, RD maturity, India">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="rd_style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Recurring Deposit (RD) Calculator</h1>
+        <div class="input-group">
+            <label for="monthlyDeposit">Monthly Deposit (₹):</label>
+            <input type="number" id="monthlyDeposit" placeholder="e.g., 1000" required>
+        </div>
+        <div class="input-group">
+            <label for="rdInterestRate">Interest Rate (% p.a.):</label>
+            <input type="number" id="rdInterestRate" placeholder="e.g., 6.5" step="0.01" required>
+        </div>
+        <div class="input-group">
+            <label for="rdDurationMonths">Duration (Months):</label>
+            <input type="number" id="rdDurationMonths" placeholder="e.g., 60" required>
+        </div>
+        <button onclick="calculateRD()">Calculate RD</button>
+        <div class="results">
+            <h2>Calculation Results</h2>
+            <p>Maturity Amount: <span id="rdMaturityAmount">₹ 0</span></p>
+            <p>Total Interest Earned: <span id="rdTotalInterestEarned">₹ 0</span></p>
+        </div>
+        <div class="formula">
+            <h2>RD Formula</h2>
+            <p>M = P &times; [ (1 + r/n)<sup>nt</sup> &ndash; 1 ] / (1 &ndash; (1 + r/n)<sup>&ndash;1</sup>)</p>
+            <p>Where:</p>
+            <ul>
+                <li>M = Maturity Value</li>
+                <li>P = Monthly Installment</li>
+                <li>r = Annual Interest Rate (decimal)</li>
+                <li>n = Number of times interest is compounded per year (usually 4 for quarterly compounding in RD)</li>
+                <li>t = Time in years (duration in months / 12)</li>
+            </ul>
+        </div>
+    </div>
+    <script src="rd_script.js"></script>
+</body>
+</html>

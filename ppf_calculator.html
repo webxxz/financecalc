@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPF Calculator India - Public Provident Fund Maturity & Interest</title>
+    <meta name="author" content="FinanceCalc.in">
+    <meta name="description" content="Calculate the maturity amount and total interest earned on your Public Provident Fund (PPF) investment in India. Understand PPF compounding rules and plan your long-term savings.">
+    <meta name="keywords" content="PPF calculator, Public Provident Fund, PPF maturity, PPF interest, India, long-term savings">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="ppf_style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>PPF Calculator</h1>
+        <div class="input-group">
+            <label for="yearlyContribution">Yearly Contribution (₹):</label>
+            <input type="number" id="yearlyContribution" placeholder="e.g., 150000" required>
+        </div>
+        <div class="input-group">
+            <label for="ppfInterestRate">Interest Rate (% p.a.):</label>
+            <input type="number" id="ppfInterestRate" placeholder="e.g., 7.1" step="0.01" required>
+        </div>
+        <div class="input-group">
+            <label for="ppfDuration">Duration (Years):</label>
+            <input type="number" id="ppfDuration" placeholder="e.g., 15" min="15" max="50" required>
+        </div>
+        <button onclick="calculatePPF()">Calculate PPF</button>
+        <div class="results">
+            <h2>Calculation Results</h2>
+            <p>Maturity Amount: <span id="ppfMaturityAmount">₹ 0</span></p>
+            <p>Total Interest Earned: <span id="ppfTotalInterestEarned">₹ 0</span></p>
+        </div>
+        <div class="formula">
+            <h2>PPF Calculation Logic</h2>
+            <p>PPF interest is compounded annually. The maturity period is 15 years, which can be extended in blocks of 5 years.</p>
+            <p>The calculation involves compounding the yearly contribution and accumulated interest annually.</p>
+        </div>
+    </div>
+    <script src="ppf_script.js"></script>
+</body>
+</html>

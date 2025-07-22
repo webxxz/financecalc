@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Interest Rate Calculator - Find Your Loan's Interest Rate</title>
+    <meta name="author" content="FinanceCalc.in">
+    <meta name="description" content="Calculate the interest rate of your loan using EMI, loan amount, and tenure. Our loan interest rate calculator helps you determine the effective annual interest rate.">
+    <meta name="keywords" content="loan interest rate calculator, calculate interest rate, EMI interest rate, loan rate, find interest rate">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="loan_interest_rate_style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Loan Interest Rate Calculator</h1>
+        <div class="input-group">
+            <label for="loanAmountIR">Loan Amount (₹):</label>
+            <input type="number" id="loanAmountIR" placeholder="e.g., 100000" required>
+        </div>
+        <div class="input-group">
+            <label for="emiIR">Monthly EMI (₹):</label>
+            <input type="number" id="emiIR" placeholder="e.g., 2000" required>
+        </div>
+        <div class="input-group">
+            <label for="loanTenureIR">Loan Tenure:</label>
+            <input type="number" id="loanTenureIR" placeholder="e.g., 5" required>
+            <select id="tenureUnitIR">
+                <option value="years">Years</option>
+                <option value="months">Months</option>
+            </select>
+        </div>
+        <button onclick="calculateLoanInterestRate()">Calculate Interest Rate</button>
+        <div class="results">
+            <h2>Calculation Results</h2>
+            <p>Estimated Annual Interest Rate: <span id="estimatedInterestRate">0 %</span></p>
+        </div>
+        <div class="info">
+            <h2>Calculation Method</h2>
+            <p>This calculator uses an iterative method (Newton-Raphson approximation) to find the interest rate that satisfies the EMI formula.</p>
+            <p>EMI = [P x R x (1+R)^N] / [(1+R)^N-1]</p>
+            <p>Where:</p>
+            <ul>
+                <li>P = Principal Loan Amount</li>
+                <li>R = Monthly Interest Rate</li>
+                <li>N = Number of Monthly Installments</li>
+            </ul>
+        </div>
+    </div>
+    <script src="loan_interest_rate_script.js"></script>
+</body>
+</html>

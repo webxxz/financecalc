@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Loan Eligibility Calculator India - Max Loan Amount</title>
+    <meta name="author" content="FinanceCalc.in">
+    <meta name="description" content="Determine your maximum home loan eligibility in India based on monthly income, existing EMIs, age, and city. Estimate how much home loan you can get.">
+    <meta name="keywords" content="home loan eligibility, loan eligibility calculator, maximum home loan, India, home finance">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="home_loan_eligibility_style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Home Loan Eligibility Calculator</h1>
+        <div class="input-group">
+            <label for="monthlyIncome">Monthly Income (₹):</label>
+            <input type="number" id="monthlyIncome" placeholder="e.g., 50000" required>
+        </div>
+        <div class="input-group">
+            <label for="existingEMIs">Existing EMIs (₹):</label>
+            <input type="number" id="existingEMIs" placeholder="e.g., 10000" value="0">
+        </div>
+        <div class="input-group">
+            <label for="applicantAge">Age:</label>
+            <input type="number" id="applicantAge" placeholder="e.g., 30" required>
+        </div>
+        <div class="input-group">
+            <label for="city">City:</label>
+            <input type="text" id="city" placeholder="e.g., Mumbai">
+        </div>
+        <button onclick="calculateHomeLoanEligibility()">Calculate Eligibility</button>
+        <div class="results">
+            <h2>Calculation Results</h2>
+            <p>Maximum Eligible Loan Amount: <span id="eligibleLoanAmount">₹ 0</span></p>
+            <p class="note">*Assumes 50% of net salary can go towards EMI.</p>
+            <p class="note">*Interest rate and tenure assumptions are indicative.</p>
+        </div>
+    </div>
+    <script src="home_loan_eligibility_script.js"></script>
+</body>
+</html>
