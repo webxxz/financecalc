@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     exchange_rate_api_key: str = Field(default="", alias="EXCHANGE_RATE_API_KEY")
     exchange_rate_api_url: str = Field(default="https://v6.exchangerate-api.com/v6", alias="EXCHANGE_RATE_API_URL")
-    exchange_rate_cache_ttl_seconds: int = Field(default=3600, alias="EXCHANGE_RATE_CACHE_TTL_SECONDS")
+    exchange_rate_cache_ttl_seconds: int = Field(default=86400, alias="EXCHANGE_RATE_CACHE_TTL_SECONDS")
 
     firebase_credentials_path: str = Field(default="", alias="FIREBASE_CREDENTIALS_PATH")
     firebase_credentials_json: str = Field(default="", alias="FIREBASE_CREDENTIALS_JSON")

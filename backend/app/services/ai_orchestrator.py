@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from openai import AsyncOpenAI
 
 from app.ai.prompts import INTENT_ROUTER_PROMPT
-from app.ai.tools import TOOLS
+from app.ai.tools import OPENAI_TOOLS, TOOLS
 from app.core.config import get_settings
 from app.schemas.ai import AIAssistantRequest, ToolDecision
 from app.schemas.calculators import EMIRequest, MortgageRequest, RetirementRequest, SIPRequest, TaxRequest
@@ -83,9 +83,16 @@ async def _detect_tool_with_openai(query: str) -> ToolDecision:
             {"role": "system", "content": INTENT_ROUTER_PROMPT},
             {"role": "user", "content": query},
         ],
-        response_format={"type": "json_object"},
+        tools=OPENAI_TOOLS,
+        tool_choice="auto",
     )
-    payload = json.loads(response.choices[0].message.content)
+    message = response.choices[0].message
+    if not message.tool_calls:
+        return _fallback_intent(query)
+
+    tool_call = message.tool_calls[0]
+    arguments = tool_call.function.arguments or "{}"
+    payload = {"tool": tool_call.function.name, "arguments": json.loads(arguments)}
     return ToolDecision(**payload)
 
 
