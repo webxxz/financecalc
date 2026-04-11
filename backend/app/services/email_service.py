@@ -8,12 +8,10 @@ from app.schemas.contact import ContactRequest
 
 settings = get_settings()
 
-_SPAM_PATTERNS = [r"https?://", r"\bbitcoin\b", r"\bcasino\b", r"\bloan\s+approval\b"]
-
 
 def _is_spam(message: str) -> bool:
     lowered = message.lower()
-    return any(re.search(pattern, lowered) for pattern in _SPAM_PATTERNS)
+    return any(re.search(pattern, lowered) for pattern in settings.spam_patterns)
 
 
 async def send_contact_email(payload: ContactRequest) -> None:

@@ -40,18 +40,30 @@ async def retirement_endpoint(payload: RetirementRequest) -> StandardResponse:
 
 @router.get("/catalog")
 async def calculator_catalog() -> dict:
+    implemented = {
+        "emi",
+        "sip",
+        "mortgage",
+        "tax",
+        "retirement",
+        "exchange-rate",
+    }
+
+    def with_status(items: list[str]) -> list[dict]:
+        return [{"slug": item, "status": "implemented" if item in implemented else "planned"} for item in items]
+
     return {
         "categories": {
-            "Personal Finance": ["budget-planner", "net-worth"],
-            "Loans & Mortgages": ["emi", "mortgage", "loan-tenure"],
-            "Investments & Wealth": ["sip", "fd", "rd"],
-            "Retirement": ["retirement-corpus", "pension-planner"],
-            "Taxation": ["tax"],
-            "Business & Corporate": ["roi", "break-even"],
-            "Real Estate": ["rental-yield", "property-affordability"],
-            "Insurance": ["life-cover", "health-premium"],
-            "Currency & Global Tools": ["exchange-rate", "purchasing-power"],
-            "Advanced Finance": ["irr", "npv"],
-            "Utilities": ["inflation", "unit-converter"],
+            "Personal Finance": with_status(["budget-planner", "net-worth"]),
+            "Loans & Mortgages": with_status(["emi", "mortgage", "loan-tenure"]),
+            "Investments & Wealth": with_status(["sip", "fd", "rd"]),
+            "Retirement": with_status(["retirement"]),
+            "Taxation": with_status(["tax"]),
+            "Business & Corporate": with_status(["roi", "break-even"]),
+            "Real Estate": with_status(["rental-yield", "property-affordability"]),
+            "Insurance": with_status(["life-cover", "health-premium"]),
+            "Currency & Global Tools": with_status(["exchange-rate", "purchasing-power"]),
+            "Advanced Finance": with_status(["irr", "npv"]),
+            "Utilities": with_status(["inflation", "unit-converter"]),
         }
     }

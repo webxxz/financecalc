@@ -4,6 +4,9 @@ from app.schemas.calculators import EMIRequest, MortgageRequest, RetirementReque
 from app.schemas.common import StandardResponse
 
 
+# Simplified effective planning rates (not legal/marginal slab rates).
+# These are used only for quick product-level estimates and should be
+# replaced with jurisdiction-specific slab engines for compliance use cases.
 TAX_RATE_BY_COUNTRY = {
     "US": 0.22,
     "IN": 0.20,

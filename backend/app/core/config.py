@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
     contact_to_email: str = Field(default="support@financecalc.app", alias="CONTACT_TO_EMAIL")
     contact_from_email: str = Field(default="no-reply@financecalc.app", alias="CONTACT_FROM_EMAIL")
+    spam_patterns_raw: str = Field(
+        default=r"https?://,\bbitcoin\b,\bcasino\b,\bloan\s+approval\b",
+        alias="SPAM_PATTERNS",
+    )
 
     @property
     def allowed_origins(self) -> List[str]:
@@ -41,6 +45,10 @@ class Settings(BaseSettings):
     @property
     def allowed_hosts(self) -> List[str]:
         return [v.strip() for v in self.allowed_hosts_raw.split(",") if v.strip()]
+
+    @property
+    def spam_patterns(self) -> List[str]:
+        return [v.strip() for v in self.spam_patterns_raw.split(",") if v.strip()]
 
 
 @lru_cache

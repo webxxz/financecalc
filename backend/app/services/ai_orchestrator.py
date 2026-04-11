@@ -6,6 +6,7 @@ from anthropic import AsyncAnthropic
 from fastapi import HTTPException
 from openai import AsyncOpenAI
 
+from app.ai.prompts import INTENT_ROUTER_PROMPT
 from app.ai.tools import TOOLS
 from app.core.config import get_settings
 from app.schemas.ai import AIAssistantRequest, ToolDecision
@@ -21,17 +22,20 @@ from app.services.exchange_rates import convert_currency
 
 settings = get_settings()
 
-PROMPT = """
-You are a finance intent router. Return JSON only with shape:
-{"tool": "<one tool>", "arguments": {<args>}}
-Allowed tools: calculate_emi, calculate_sip, calculate_mortgage, calculate_tax, calculate_retirement, convert_currency.
-Never output explanations.
-""".strip()
+
+def _extract_numbers(query: str) -> list[float]:
+    try:
+        return [float(n) for n in re.findall(r"\d+(?:\.\d+)?", query)]
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Could not parse numeric values from query. Please provide valid numbers.",
+        ) from exc
 
 
 def _fallback_intent(query: str) -> ToolDecision:
     lowered = query.lower()
-    nums = [float(n) for n in re.findall(r"\d+(?:\.\d+)?", lowered)]
+    nums = _extract_numbers(lowered)
 
     if "sip" in lowered and len(nums) >= 3:
         return ToolDecision(tool="calculate_sip", arguments={"monthly_investment": nums[0], "annual_return_rate": nums[1], "years": int(nums[2])})
@@ -74,7 +78,7 @@ async def _detect_tool_with_openai(query: str) -> ToolDecision:
         model=settings.ai_primary_model,
         temperature=0,
         messages=[
-            {"role": "system", "content": PROMPT},
+            {"role": "system", "content": INTENT_ROUTER_PROMPT},
             {"role": "user", "content": query},
         ],
         response_format={"type": "json_object"},
@@ -92,7 +96,7 @@ async def _detect_tool_with_claude(query: str) -> ToolDecision:
         model=settings.ai_fallback_model,
         max_tokens=300,
         temperature=0,
-        system=PROMPT,
+        system=INTENT_ROUTER_PROMPT,
         messages=[{"role": "user", "content": query}],
     )
     text = "".join(block.text for block in response.content if hasattr(block, "text"))

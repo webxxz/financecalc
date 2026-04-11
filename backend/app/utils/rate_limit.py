@@ -10,8 +10,22 @@ class InMemoryRateLimiter:
         self.window_seconds = window_seconds
         self._store = defaultdict(deque)
 
+    @staticmethod
+    def _get_client_ip(request: Request) -> str:
+        forwarded_for = request.headers.get("x-forwarded-for", "")
+        if forwarded_for:
+            first_ip = forwarded_for.split(",")[0].strip()
+            if first_ip:
+                return first_ip
+
+        real_ip = request.headers.get("x-real-ip", "").strip()
+        if real_ip:
+            return real_ip
+
+        return request.client.host if request.client else "unknown"
+
     def check(self, request: Request) -> None:
-        client_ip = (request.client.host if request.client else "unknown")
+        client_ip = self._get_client_ip(request)
         now = time()
         bucket = self._store[client_ip]
 
