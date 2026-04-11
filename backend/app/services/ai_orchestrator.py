@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from typing import Any, Dict
 
@@ -21,6 +22,7 @@ from app.services.calculators import (
 from app.services.exchange_rates import convert_currency
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def _extract_numbers(query: str) -> list[float]:
@@ -107,10 +109,12 @@ async def _detect_tool_with_claude(query: str) -> ToolDecision:
 async def detect_tool(query: str) -> ToolDecision:
     try:
         decision = await _detect_tool_with_openai(query)
-    except Exception:
+    except Exception as openai_exc:
+        logger.warning("OpenAI tool detection failed: %s", openai_exc)
         try:
             decision = await _detect_tool_with_claude(query)
-        except Exception:
+        except Exception as claude_exc:
+            logger.warning("Claude tool detection failed: %s", claude_exc)
             decision = _fallback_intent(query)
 
     if decision.tool not in TOOLS:
