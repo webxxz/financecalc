@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { type User, onAuthStateChanged } from "firebase/auth";
 
 import { createGoal, deleteGoal, getUserDashboard, updateGoal, type GoalPayload } from "@/lib/api";
 import { auth } from "@/lib/firebase-client";
@@ -27,6 +28,8 @@ type DashboardHistory = {
   created_at?: string;
 };
 
+const QUICK_PROGRESS_INCREMENT = 0.1;
+
 export default function DashboardClient() {
   const [goals, setGoals] = useState<DashboardGoal[]>([]);
   const [calculations, setCalculations] = useState<DashboardCalc[]>([]);
@@ -34,6 +37,7 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [user, setUser] = useState<User | null>(auth?.currentUser ?? null);
   const [goalForm, setGoalForm] = useState<GoalPayload>({
     title: "",
     target_amount: 0,
@@ -41,16 +45,22 @@ export default function DashboardClient() {
     target_date: "",
     notes: "",
   });
-  const signedInUser = auth?.currentUser ?? null;
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+      setUser(nextUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const loadDashboard = useCallback(async () => {
-    if (!signedInUser) {
+    if (!user) {
       setLoading(false);
       return;
     }
     try {
       setLoading(true);
-      const token = await signedInUser.getIdToken();
+      const token = await user.getIdToken();
       const data = await getUserDashboard(token);
       const result = data.result as {
         goals?: DashboardGoal[];
@@ -65,18 +75,18 @@ export default function DashboardClient() {
     } finally {
       setLoading(false);
     }
-  }, [signedInUser]);
+  }, [user]);
 
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
 
   const onCreateGoal = async () => {
-    if (!signedInUser) return;
+    if (!user) return;
     setError("");
     setMessage("");
     try {
-      const token = await signedInUser.getIdToken();
+      const token = await user.getIdToken();
       await createGoal(token, goalForm);
       setMessage("Goal saved.");
       setGoalForm({ title: "", target_amount: 0, current_amount: 0, target_date: "", notes: "" });
@@ -87,12 +97,12 @@ export default function DashboardClient() {
   };
 
   const onQuickProgress = async (goal: DashboardGoal) => {
-    if (!signedInUser) return;
+    if (!user) return;
     setError("");
     setMessage("");
     try {
-      const token = await signedInUser.getIdToken();
-      await updateGoal(token, goal.id, { current_amount: goal.current_amount + goal.target_amount * 0.1 });
+      const token = await user.getIdToken();
+      await updateGoal(token, goal.id, { current_amount: goal.current_amount + goal.target_amount * QUICK_PROGRESS_INCREMENT });
       setMessage("Goal progress updated.");
       await loadDashboard();
     } catch (err) {
@@ -101,11 +111,11 @@ export default function DashboardClient() {
   };
 
   const onDeleteGoal = async (goalId: string) => {
-    if (!signedInUser) return;
+    if (!user) return;
     setError("");
     setMessage("");
     try {
-      const token = await signedInUser.getIdToken();
+      const token = await user.getIdToken();
       await deleteGoal(token, goalId);
       setMessage("Goal deleted.");
       await loadDashboard();
@@ -114,7 +124,7 @@ export default function DashboardClient() {
     }
   };
 
-  if (!signedInUser) {
+  if (!user) {
     return <p className="text-sm text-zinc-600 dark:text-zinc-300">Sign in with Firebase to view your dashboard.</p>;
   }
 

@@ -66,8 +66,6 @@ def _fallback_intent(query: str) -> List[ToolDecision]:
 
     if "sip" in lowered and len(nums) >= 3:
         return [ToolDecision(tool="calculate_sip", arguments={"monthly_investment": nums[0], "annual_return_rate": nums[1], "years": int(nums[2])})]
-    if any(k in lowered for k in ["emi", "loan"]) and len(nums) >= 3:
-        return [ToolDecision(tool="calculate_emi", arguments={"principal": nums[0], "annual_interest_rate": nums[1], "tenure_months": int(nums[2])})]
     if "mortgage" in lowered and len(nums) >= 4:
         return [
             ToolDecision(
@@ -80,6 +78,8 @@ def _fallback_intent(query: str) -> List[ToolDecision]:
                 },
             )
         ]
+    if any(k in lowered for k in ["emi", "loan"]) and len(nums) >= 3 and "mortgage" not in lowered:
+        return [ToolDecision(tool="calculate_emi", arguments={"principal": nums[0], "annual_interest_rate": nums[1], "tenure_months": int(nums[2])})]
     if "tax" in lowered and len(nums) >= 1:
         return [ToolDecision(tool="calculate_tax", arguments={"annual_income": nums[0], "deductions": nums[1] if len(nums) > 1 else 0, "country_code": "US"})]
     if "retirement" in lowered and len(nums) >= 4:
@@ -104,25 +104,28 @@ def _parse_tool_calls(tool_calls: Any) -> Tuple[List[ToolDecision], List[str]]:
     decisions: List[ToolDecision] = []
     warnings: List[str] = []
 
+    def warn(idx: int, message: str) -> None:
+        warnings.append(f"Tool call #{idx + 1}: {message}")
+
     for idx, tool_call in enumerate(tool_calls or []):
         function = getattr(tool_call, "function", None)
         if not function:
-            warnings.append(f"Ignored tool call #{idx + 1}: missing function payload.")
+            warn(idx, "ignored due to missing function payload.")
             continue
         tool_name = getattr(function, "name", "")
         if tool_name not in TOOLS:
-            warnings.append(f"Ignored unsupported tool '{tool_name}' in tool call #{idx + 1}.")
+            warn(idx, f"ignored unsupported tool '{tool_name}'.")
             continue
         raw_arguments = getattr(function, "arguments", "{}") or "{}"
         try:
             arguments = json.loads(raw_arguments)
         except json.JSONDecodeError:
-            warnings.append(f"Ignored invalid JSON arguments for tool '{tool_name}'.")
+            warn(idx, f"ignored invalid JSON arguments for tool '{tool_name}': {raw_arguments[:120]}.")
             continue
         try:
             decisions.append(ToolDecision(tool=tool_name, arguments=arguments))
         except Exception as exc:
-            warnings.append(f"Ignored invalid arguments for tool '{tool_name}': {exc}.")
+            warn(idx, f"ignored invalid arguments for tool '{tool_name}': {exc}.")
     return decisions, warnings
 
 
@@ -230,8 +233,13 @@ def _build_combined_insights(tool_runs: List[Dict[str, Any]]) -> List[str]:
                 insights.append(item)
 
     used_tools = {run["tool"] for run in tool_runs}
-    if {"calculate_mortgage", "calculate_emi"}.issubset(used_tools):
-        insights.append("Cross-check mortgage all-in cost against base EMI to validate overall house affordability.")
+    combo_insights = {
+        frozenset({"calculate_mortgage", "calculate_emi"}): "Cross-check mortgage all-in cost against base EMI to validate overall house affordability.",
+        frozenset({"calculate_tax", "calculate_retirement"}): "Use post-tax income assumptions when setting retirement contribution plans.",
+    }
+    for combo, combo_insight in combo_insights.items():
+        if combo.issubset(used_tools):
+            insights.append(combo_insight)
     if len(tool_runs) > 1:
         insights.append("These outputs were combined from multiple calculators for a single planning decision.")
     return insights

@@ -23,17 +23,45 @@ type CalculatorUIProps = {
 };
 
 const SUPPORTED_CURRENCIES = ["USD", "INR", "EUR", "GBP"] as const;
+const MAX_SUMMARY_LENGTH = 600;
 const CURRENCY_LOCALE: Record<(typeof SUPPORTED_CURRENCIES)[number], string> = {
   USD: "en-US",
   INR: "en-IN",
   EUR: "de-DE",
   GBP: "en-GB",
 };
-const MONEY_KEYWORDS = ["amount", "price", "payment", "cost", "interest", "principal", "income", "tax", "emi", "value", "returns", "corpus"];
+const MONEY_FIELDS = new Set([
+  "annual_contribution",
+  "annual_income",
+  "annual_property_tax",
+  "annual_home_insurance",
+  "current_savings",
+  "deductions",
+  "estimated_returns",
+  "estimated_tax",
+  "future_value",
+  "future_value_contributions",
+  "future_value_current_savings",
+  "loan_principal",
+  "monthly_emi",
+  "monthly_home_insurance",
+  "monthly_investment",
+  "monthly_mortgage_payment",
+  "monthly_property_tax",
+  "net_income_after_tax",
+  "projected_retirement_corpus",
+  "property_price",
+  "target_amount",
+  "total_interest",
+  "total_invested",
+  "total_monthly_housing_cost",
+  "total_payment",
+]);
 
 function formatFieldValue(key: string, value: unknown, currency: (typeof SUPPORTED_CURRENCIES)[number]): string {
   if (typeof value !== "number") return String(value);
-  const isMoneyLike = MONEY_KEYWORDS.some((keyword) => key.toLowerCase().includes(keyword));
+  const normalizedKey = key.toLowerCase();
+  const isMoneyLike = MONEY_FIELDS.has(normalizedKey);
   if (isMoneyLike) {
     return new Intl.NumberFormat(CURRENCY_LOCALE[currency], {
       style: "currency",
@@ -98,7 +126,9 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
     setAssistant(null);
     setError("");
     try {
-      const aiQuery = `Explain this ${title} result in plain language and suggest next steps. Input: ${JSON.stringify(payload)}. Output: ${JSON.stringify(result.result)}.`;
+      const inputSummary = JSON.stringify(payload).slice(0, MAX_SUMMARY_LENGTH);
+      const outputSummary = JSON.stringify(result.result).slice(0, MAX_SUMMARY_LENGTH);
+      const aiQuery = `Explain this ${title} result in plain language and suggest next steps. Input summary: ${inputSummary}. Output summary: ${outputSummary}.`;
       const response = await askAssistant(aiQuery);
       setAssistant(response);
     } catch (err) {

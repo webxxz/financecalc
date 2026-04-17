@@ -7,8 +7,6 @@ export const metadata: Metadata = {
   description: "Track saved calculations, goals, and history from your FinanceCalc account.",
 };
 
-export const revalidate = 3600;
-
 export default function DashboardPage() {
   return <DashboardClient />;
 }

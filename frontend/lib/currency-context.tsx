@@ -21,9 +21,10 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     const localeCookie = document.cookie
       .split(";")
       .map((part) => part.trim())
-      .find((part) => part.startsWith("fc_locale="))
-      ?.split("=")[1];
-    const locale = decodeURIComponent(localeCookie || navigator.language || "en-US").toLowerCase();
+      .find((part) => part.startsWith("fc_locale="));
+    const localeCookieValue = localeCookie ? localeCookie.slice("fc_locale=".length) : undefined;
+    const decodedLocale = decodeURIComponent(localeCookieValue || navigator.language || "en-US").trim();
+    const locale = /^[a-z]{2}(?:-[a-z]{2})?$/i.test(decodedLocale) ? decodedLocale.toLowerCase() : "en-us";
     if (locale.includes("in")) return "INR";
     if (locale.includes("gb")) return "GBP";
     if (locale.includes("fr") || locale.includes("de") || locale.includes("es") || locale.includes("it") || locale.includes("pt") || locale.includes("eu")) {
