@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 from anthropic import AsyncAnthropic
 from fastapi import HTTPException
@@ -10,7 +10,7 @@ from openai import AsyncOpenAI
 from app.ai.prompts import INTENT_ROUTER_PROMPT
 from app.ai.tools import OPENAI_TOOLS, TOOLS
 from app.core.config import get_settings
-from app.schemas.ai import AIAssistantRequest, ToolDecision
+from app.schemas.ai import AIAssistantRequest, AIAssistantResponse, ToolDecision
 from app.schemas.calculators import EMIRequest, MortgageRequest, RetirementRequest, SIPRequest, TaxRequest
 from app.services.calculators import (
     calculate_emi,
@@ -35,43 +35,107 @@ def _extract_numbers(query: str) -> list[float]:
         ) from exc
 
 
-def _fallback_intent(query: str) -> ToolDecision:
+def _fallback_intent(query: str) -> List[ToolDecision]:
     lowered = query.lower()
     nums = _extract_numbers(lowered)
+    decisions: List[ToolDecision] = []
+
+    if any(k in lowered for k in ["afford", "house", "home"]) and len(nums) >= 4:
+        decisions.append(
+            ToolDecision(
+                tool="calculate_mortgage",
+                arguments={
+                    "property_price": nums[0],
+                    "down_payment": nums[1],
+                    "annual_interest_rate": nums[2],
+                    "tenure_years": int(nums[3]),
+                },
+            )
+        )
+        decisions.append(
+            ToolDecision(
+                tool="calculate_emi",
+                arguments={
+                    "principal": max(0.0, nums[0] - nums[1]),
+                    "annual_interest_rate": nums[2],
+                    "tenure_months": int(nums[3]) * 12,
+                },
+            )
+        )
+        return decisions
 
     if "sip" in lowered and len(nums) >= 3:
-        return ToolDecision(tool="calculate_sip", arguments={"monthly_investment": nums[0], "annual_return_rate": nums[1], "years": int(nums[2])})
-    if any(k in lowered for k in ["emi", "loan"]) and len(nums) >= 3:
-        return ToolDecision(tool="calculate_emi", arguments={"principal": nums[0], "annual_interest_rate": nums[1], "tenure_months": int(nums[2])})
+        return [ToolDecision(tool="calculate_sip", arguments={"monthly_investment": nums[0], "annual_return_rate": nums[1], "years": int(nums[2])})]
     if "mortgage" in lowered and len(nums) >= 4:
-        return ToolDecision(
-            tool="calculate_mortgage",
-            arguments={
-                "property_price": nums[0],
-                "down_payment": nums[1],
-                "annual_interest_rate": nums[2],
-                "tenure_years": int(nums[3]),
-            },
-        )
+        return [
+            ToolDecision(
+                tool="calculate_mortgage",
+                arguments={
+                    "property_price": nums[0],
+                    "down_payment": nums[1],
+                    "annual_interest_rate": nums[2],
+                    "tenure_years": int(nums[3]),
+                },
+            )
+        ]
+    if any(k in lowered for k in ["emi", "loan"]) and len(nums) >= 3 and "mortgage" not in lowered:
+        return [ToolDecision(tool="calculate_emi", arguments={"principal": nums[0], "annual_interest_rate": nums[1], "tenure_months": int(nums[2])})]
     if "tax" in lowered and len(nums) >= 1:
-        return ToolDecision(tool="calculate_tax", arguments={"annual_income": nums[0], "deductions": nums[1] if len(nums) > 1 else 0, "country_code": "US"})
+        return [ToolDecision(tool="calculate_tax", arguments={"annual_income": nums[0], "deductions": nums[1] if len(nums) > 1 else 0, "country_code": "US"})]
     if "retirement" in lowered and len(nums) >= 4:
-        return ToolDecision(
-            tool="calculate_retirement",
-            arguments={
-                "current_savings": nums[0],
-                "annual_contribution": nums[1],
-                "expected_annual_return_rate": nums[2],
-                "years_to_retirement": int(nums[3]),
-            },
-        )
+        return [
+            ToolDecision(
+                tool="calculate_retirement",
+                arguments={
+                    "current_savings": nums[0],
+                    "annual_contribution": nums[1],
+                    "expected_annual_return_rate": nums[2],
+                    "years_to_retirement": int(nums[3]),
+                },
+            )
+        ]
     if any(k in lowered for k in ["convert", "exchange", "currency"]) and len(nums) >= 1:
-        return ToolDecision(tool="convert_currency", arguments={"base_currency": "USD", "target_currency": "INR", "amount": nums[0]})
+        return [ToolDecision(tool="convert_currency", arguments={"base_currency": "USD", "target_currency": "INR", "amount": nums[0]})]
 
     raise HTTPException(status_code=400, detail="Unable to infer intent and required numeric inputs from query")
 
 
-async def _detect_tool_with_openai(query: str) -> ToolDecision:
+def _parse_tool_calls(tool_calls: Any) -> Tuple[List[ToolDecision], List[str]]:
+    decisions: List[ToolDecision] = []
+    warnings: List[str] = []
+
+    def warn(idx: int, message: str) -> None:
+        warnings.append(f"Tool call #{idx + 1}: {message}")
+
+    for idx, tool_call in enumerate(tool_calls or []):
+        function = getattr(tool_call, "function", None)
+        if not function:
+            warn(idx, "ignored due to missing function payload.")
+            continue
+        tool_name = getattr(function, "name", "")
+        if tool_name not in TOOLS:
+            warn(idx, f"ignored unsupported tool '{tool_name}'.")
+            continue
+        raw_arguments = getattr(function, "arguments", "{}") or "{}"
+        try:
+            arguments = json.loads(raw_arguments)
+        except json.JSONDecodeError:
+            warn(idx, f"ignored invalid JSON arguments for tool '{tool_name}': {raw_arguments[:120]}.")
+            continue
+        try:
+            decisions.append(ToolDecision(tool=tool_name, arguments=arguments))
+        except Exception as exc:
+            warn(idx, f"ignored invalid arguments for tool '{tool_name}': {exc}.")
+    return decisions, warnings
+
+
+def _parse_claude_payload(payload: Dict[str, Any]) -> List[ToolDecision]:
+    if "tools" in payload and isinstance(payload["tools"], list):
+        return [ToolDecision(**item) for item in payload["tools"]]
+    return [ToolDecision(**payload)]
+
+
+async def _detect_tool_with_openai(query: str) -> Tuple[List[ToolDecision], List[str]]:
     if not settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY not configured")
 
@@ -88,15 +152,15 @@ async def _detect_tool_with_openai(query: str) -> ToolDecision:
     )
     message = response.choices[0].message
     if not message.tool_calls:
-        return _fallback_intent(query)
+        return _fallback_intent(query), ["AI response did not include tool calls. Used deterministic fallback."]
 
-    tool_call = message.tool_calls[0]
-    arguments = tool_call.function.arguments or "{}"
-    payload = {"tool": tool_call.function.name, "arguments": json.loads(arguments)}
-    return ToolDecision(**payload)
+    decisions, warnings = _parse_tool_calls(message.tool_calls)
+    if decisions:
+        return decisions, warnings
+    return _fallback_intent(query), warnings + ["No valid AI tool calls found. Used deterministic fallback."]
 
 
-async def _detect_tool_with_claude(query: str) -> ToolDecision:
+async def _detect_tool_with_claude(query: str) -> Tuple[List[ToolDecision], List[str]]:
     if not settings.claude_api_key:
         raise RuntimeError("CLAUDE_API_KEY not configured")
 
@@ -110,38 +174,38 @@ async def _detect_tool_with_claude(query: str) -> ToolDecision:
     )
     text = "".join(block.text for block in response.content if hasattr(block, "text"))
     payload = json.loads(text)
-    return ToolDecision(**payload)
+    decisions = _parse_claude_payload(payload)
+    return decisions, []
 
 
-async def detect_tool(query: str) -> ToolDecision:
+async def detect_tools(query: str) -> Tuple[List[ToolDecision], List[str]]:
     try:
-        decision = await _detect_tool_with_openai(query)
+        decisions, warnings = await _detect_tool_with_openai(query)
     except Exception as openai_exc:
         logger.warning("OpenAI tool detection failed: %s", openai_exc)
         try:
-            decision = await _detect_tool_with_claude(query)
+            decisions, warnings = await _detect_tool_with_claude(query)
         except Exception as claude_exc:
             logger.warning("Claude tool detection failed: %s", claude_exc)
-            decision = _fallback_intent(query)
+            decisions, warnings = _fallback_intent(query), ["AI providers unavailable. Used deterministic fallback."]
 
-    if decision.tool not in TOOLS:
-        raise HTTPException(status_code=400, detail="Unsupported tool selected")
-    return decision
+    valid_decisions = [decision for decision in decisions if decision.tool in TOOLS]
+    if not valid_decisions:
+        raise HTTPException(status_code=400, detail="Unsupported or invalid tool selection")
+    return valid_decisions, warnings
 
 
-async def execute_tool(request: AIAssistantRequest) -> Dict[str, Any]:
-    decision = await detect_tool(request.query)
-
+async def _execute_single_tool(decision: ToolDecision) -> Dict[str, Any]:
     if decision.tool == "calculate_emi":
-        out = calculate_emi(EMIRequest(**decision.arguments)).model_dump()
+        return calculate_emi(EMIRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_sip":
-        out = calculate_sip(SIPRequest(**decision.arguments)).model_dump()
+        return calculate_sip(SIPRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_mortgage":
-        out = calculate_mortgage(MortgageRequest(**decision.arguments)).model_dump()
+        return calculate_mortgage(MortgageRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_tax":
-        out = calculate_tax(TaxRequest(**decision.arguments)).model_dump()
+        return calculate_tax(TaxRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_retirement":
-        out = calculate_retirement(RetirementRequest(**decision.arguments)).model_dump()
+        return calculate_retirement(RetirementRequest(**decision.arguments)).model_dump()
     elif decision.tool == "convert_currency":
         converted = await convert_currency(
             base_currency=decision.arguments["base_currency"],
@@ -156,11 +220,72 @@ async def execute_tool(request: AIAssistantRequest) -> Dict[str, Any]:
                 "FX rates can change frequently throughout the day.",
             ],
         }
+        return out
     else:
         raise HTTPException(status_code=400, detail="Unsupported tool execution path")
 
-    return {
-        "tool_used": decision.tool,
-        "tool_arguments": decision.arguments,
-        **out,
+
+def _build_combined_insights(tool_runs: List[Dict[str, Any]]) -> List[str]:
+    insights: List[str] = []
+    for run in tool_runs:
+        for item in run["output"].get("insights", []):
+            if item not in insights:
+                insights.append(item)
+
+    used_tools = {run["tool"] for run in tool_runs}
+    combo_insights = {
+        frozenset({"calculate_mortgage", "calculate_emi"}): "Cross-check mortgage all-in cost against base EMI to validate overall house affordability.",
+        frozenset({"calculate_tax", "calculate_retirement"}): "Use post-tax income assumptions when setting retirement contribution plans.",
     }
+    for combo, combo_insight in combo_insights.items():
+        if combo.issubset(used_tools):
+            insights.append(combo_insight)
+    if len(tool_runs) > 1:
+        insights.append("These outputs were combined from multiple calculators for a single planning decision.")
+    return insights
+
+
+async def execute_tools(decisions: List[ToolDecision]) -> Dict[str, Any]:
+    tool_runs: List[Dict[str, Any]] = []
+    summaries: List[str] = []
+
+    for decision in decisions:
+        output = await _execute_single_tool(decision)
+        tool_runs.append(
+            {
+                "tool": decision.tool,
+                "arguments": decision.arguments,
+                "result": output.get("result", {}),
+                "summary": output.get("summary", ""),
+                "insights": output.get("insights", []),
+                "output": output,
+            }
+        )
+        if output.get("summary"):
+            summaries.append(output["summary"])
+
+    return {
+        "result": {"tool_results": [{"tool": r["tool"], "arguments": r["arguments"], "result": r["result"]} for r in tool_runs]},
+        "summary": " ".join(summaries) if summaries else "Processed your request using finance calculators.",
+        "insights": _build_combined_insights(tool_runs),
+        "tools_used": [r["tool"] for r in tool_runs],
+        "tool_arguments_list": [r["arguments"] for r in tool_runs],
+    }
+
+
+async def execute_tool(request: AIAssistantRequest) -> Dict[str, Any]:
+    decisions, warnings = await detect_tools(request.query)
+    combined = await execute_tools(decisions)
+
+    first_decision = decisions[0] if decisions else None
+    response = AIAssistantResponse(
+        result=combined["result"],
+        summary=combined["summary"],
+        insights=combined["insights"],
+        warnings=warnings,
+        tools_used=combined["tools_used"],
+        tool_arguments_list=combined["tool_arguments_list"],
+        tool_used=first_decision.tool if first_decision else None,
+        tool_arguments=first_decision.arguments if first_decision else None,
+    )
+    return response.model_dump()

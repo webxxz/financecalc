@@ -1,4 +1,9 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
+
+export const revalidate = 3600;
 
 export default function Home() {
   return (
@@ -26,6 +31,11 @@ export default function Home() {
           </Link>
         ))}
       </div>
+
+      <AffiliateSection
+        title="Loan Partner Marketplace"
+        description="Ad/affiliate placeholder: compare mortgages and personal loans from financing partners in one place."
+      />
     </section>
   );
 }

@@ -62,6 +62,44 @@ OPENAI_TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "calculate_tax",
+            "description": "Estimate tax from annual income, deductions, and country code.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "annual_income": {"type": "number"},
+                    "deductions": {"type": "number"},
+                    "country_code": {"type": "string"},
+                },
+                "required": ["annual_income"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_retirement",
+            "description": "Project retirement corpus from current savings and yearly contributions.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "current_savings": {"type": "number"},
+                    "annual_contribution": {"type": "number"},
+                    "expected_annual_return_rate": {"type": "number"},
+                    "years_to_retirement": {"type": "integer"},
+                },
+                "required": [
+                    "current_savings",
+                    "annual_contribution",
+                    "expected_annual_return_rate",
+                    "years_to_retirement",
+                ],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "convert_currency",
             "description": "Convert amount from base currency to target currency using live rates.",
             "parameters": {

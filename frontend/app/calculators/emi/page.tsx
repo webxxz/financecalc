@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 
 import CalculatorUI from "@/components/CalculatorUI";
+
+const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
 
 export const metadata: Metadata = {
   title: "EMI Calculator",
   description:
     "Use the FinanceCalc EMI calculator to estimate monthly loan installments, total payment, and total interest with transparent assumptions.",
 };
+
+export const revalidate = 3600;
 
 const seoContent = `An EMI calculator helps borrowers make better credit decisions before committing to a loan. Instead of relying on rough estimates, it computes your monthly installment from three direct variables: principal, annual interest rate, and tenure in months. This matters because small interest changes can significantly alter total outflow over the life of a loan. By evaluating scenarios early, users can compare affordability, avoid repayment stress, and reduce long-term interest burden.
 
@@ -49,6 +54,7 @@ export default function EMIPage() {
           <p key={paragraph}>{paragraph}</p>
         ))}
       </article>
+      <AffiliateSection />
     </div>
   );
 }
