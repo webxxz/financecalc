@@ -36,6 +36,11 @@ uvicorn app.main:app --reload --port 8000
 - `POST /api/contact`
 - `POST /api/user/calculations` (Firebase Bearer token required)
 - `GET /api/user/calculations` (Firebase Bearer token required)
+- `POST /api/user/goals` (Firebase Bearer token required)
+- `GET /api/user/goals` (Firebase Bearer token required)
+- `PATCH /api/user/goals/{goal_id}` (Firebase Bearer token required)
+- `DELETE /api/user/goals/{goal_id}` (Firebase Bearer token required)
+- `GET /api/user/dashboard` (Firebase Bearer token required)
 
 ## Render deployment notes
 

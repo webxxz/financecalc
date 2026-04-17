@@ -62,3 +62,39 @@ def list_user_calculations(uid: str, limit: int = 50) -> List[Dict[str, Any]]:
         .stream()
     )
     return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+
+
+def save_user_goal(uid: str, data: Dict[str, Any]) -> str:
+    db = get_firestore_client()
+    doc_ref = db.collection("users").document(uid).collection("goals").document()
+    doc_ref.set(data)
+    return doc_ref.id
+
+
+def list_user_goals(uid: str, limit: int = 100) -> List[Dict[str, Any]]:
+    db = get_firestore_client()
+    docs = (
+        db.collection("users")
+        .document(uid)
+        .collection("goals")
+        .order_by("created_at", direction=firestore.Query.DESCENDING)
+        .limit(limit)
+        .stream()
+    )
+    return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+
+
+def update_user_goal(uid: str, goal_id: str, data: Dict[str, Any]) -> None:
+    db = get_firestore_client()
+    doc_ref = db.collection("users").document(uid).collection("goals").document(goal_id)
+    if not doc_ref.get().exists:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    doc_ref.update(data)
+
+
+def delete_user_goal(uid: str, goal_id: str) -> None:
+    db = get_firestore_client()
+    doc_ref = db.collection("users").document(uid).collection("goals").document(goal_id)
+    if not doc_ref.get().exists:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    doc_ref.delete()
