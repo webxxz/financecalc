@@ -73,15 +73,13 @@ def calculate_tax(data: TaxRequest) -> StandardResponse:
         cess = new_cess
         total_tax = new_total_tax
 
-    net_income_after_tax = gross_income - total_tax
-    rebate_applies = (regime == "old" and taxable_income <= 500000) or (regime != "old" and taxable_income <= 700000)
-    effective_tax_rate = (total_tax / gross_income * 100) if gross_income > 0 else 0.0
+    rebate_applies = (regime == "old" and taxable_income <= 500000) or (regime == "new" and taxable_income <= 700000)
     if rebate_applies:
         tax_before_cess = 0.0
         cess = 0.0
         total_tax = 0.0
-        effective_tax_rate = 0.0
-        net_income_after_tax = gross_income
+    net_income_after_tax = gross_income - total_tax
+    effective_tax_rate = 0.0 if rebate_applies else ((total_tax / gross_income * 100) if gross_income > 0 else 0.0)
     monthly_take_home = net_income_after_tax / 12 if gross_income > 0 else 0.0
 
     if old_total_tax < new_total_tax:
