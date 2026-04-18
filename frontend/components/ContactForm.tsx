@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { toast } from "sonner";
 
 import { sendContactMessage } from "@/lib/api";
 
@@ -18,11 +19,14 @@ export default function ContactForm() {
     try {
       await sendContactMessage({ name, email, message });
       setStatus("Message sent successfully.");
+      toast.success("Message sent successfully.");
       setName("");
       setEmail("");
       setMessage("");
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : "Unable to send message.");
+      const failureMessage = err instanceof Error ? err.message : "Unable to send message.";
+      setStatus(failureMessage);
+      toast.error(failureMessage);
     } finally {
       setLoading(false);
     }

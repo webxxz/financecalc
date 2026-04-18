@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { CurrencyProvider } from "@/lib/currency-context";
+import AppProviders from "@/components/AppProviders";
 
 import "./globals.css";
 
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100">
-        <CurrencyProvider>
+        <AppProviders>
           <header className="border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-black/80">
             <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
               <Link href="/" className="text-lg font-semibold">
@@ -40,13 +40,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <Link href="/calculators/emi">EMI</Link>
                 <Link href="/calculators/sip">SIP</Link>
                 <Link href="/calculators/mortgage">Mortgage</Link>
+                <Link href="/learn/what-is-emi">Learn</Link>
                 <Link href="/dashboard">Dashboard</Link>
                 <Link href="/contact">Contact</Link>
               </div>
             </nav>
           </header>
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
-        </CurrencyProvider>
+        </AppProviders>
       </body>
     </html>
   );

@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Request
 
+from app.core.config import get_settings
 from app.schemas.contact import ContactRequest
 from app.services.email_service import send_contact_email
-from app.utils.rate_limit import InMemoryRateLimiter
+from app.utils.limiter import limiter
 
 router = APIRouter(tags=["contact"])
-rate_limiter = InMemoryRateLimiter(requests_per_window=10, window_seconds=60)
+settings = get_settings()
 
 
 @router.post("/contact")
+@limiter.limit(settings.contact_rate_limit)
 async def contact_endpoint(payload: ContactRequest, request: Request) -> dict:
-    rate_limiter.check(request)
+    # request is required for slowapi's limiter key function.
     await send_contact_email(payload)
     return {
         "result": {"status": "queued"},
