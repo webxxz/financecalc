@@ -11,9 +11,7 @@ settings = get_settings()
 
 @router.post("/contact")
 @limiter.limit(settings.contact_rate_limit)
-async def contact_endpoint(payload: ContactRequest, request: Request) -> dict:
-    # request is required for slowapi's limiter key function.
-    del request
+async def contact_endpoint(payload: ContactRequest, _request: Request) -> dict:
     await send_contact_email(payload)
     return {
         "result": {"status": "queued"},

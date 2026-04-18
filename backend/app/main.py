@@ -77,6 +77,12 @@ async def security_middleware(request: Request, call_next):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
+    except HTTPException as exc:
+        status_code = exc.status_code
+        raise
+    except Exception:
+        status_code = 500
+        raise
     finally:
         latency_ms = round((perf_counter() - start) * 1000, 2)
         logger.info(
