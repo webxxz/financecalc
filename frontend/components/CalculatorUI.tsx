@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { askAssistant, postCalculator, saveCalculation, type CalculatorResponse } from "@/lib/api";
 import { useCurrency } from "@/lib/currency-context";
@@ -79,7 +80,6 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
   const [error, setError] = useState("");
   const [assistant, setAssistant] = useState<CalculatorResponse | null>(null);
   const [assistantLoading, setAssistantLoading] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
   const { currency, setCurrency } = useCurrency();
 
   const payload = useMemo(() => {
@@ -98,11 +98,11 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
     setError("");
     setResult(null);
     setAssistant(null);
-    setSaveMessage("");
 
     try {
       const data = await postCalculator(endpoint, payload);
       setResult(data);
+      toast.success("Calculation complete.");
 
       if (auth?.currentUser) {
         const token = await auth.currentUser.getIdToken();
@@ -111,10 +111,12 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
           input_data: payload,
           output_data: data.result,
         });
-        setSaveMessage("Saved to your dashboard history.");
+        toast.success("Saved to your dashboard history.");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to calculate");
+      const message = err instanceof Error ? err.message : "Unable to calculate";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -131,8 +133,11 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
       const aiQuery = `Explain this ${title} result in plain language and suggest next steps. Input summary: ${inputSummary}. Output summary: ${outputSummary}.`;
       const response = await askAssistant(aiQuery);
       setAssistant(response);
+      toast.success("AI explanation ready.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to get AI explanation");
+      const message = err instanceof Error ? err.message : "Unable to get AI explanation";
+      setError(message);
+      toast.error(message);
     } finally {
       setAssistantLoading(false);
     }
@@ -190,7 +195,13 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
       </form>
 
       {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
-      {saveMessage ? <p className="mt-4 text-sm text-emerald-600">{saveMessage}</p> : null}
+      {loading && !result ? (
+        <div className="mt-6 space-y-3">
+          <div className="h-6 w-40 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-20 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-16 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+        </div>
+      ) : null}
 
       {result ? (
         <div className="mt-6 space-y-4">
@@ -220,7 +231,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
             </ul>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+          <div id="ai-assistant" className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="text-lg font-semibold">Ask AI About This Result</h3>
               <button

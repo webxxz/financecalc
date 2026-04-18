@@ -7,3 +7,9 @@ class StandardResponse(BaseModel):
     result: Dict[str, Any] = Field(default_factory=dict)
     summary: str
     insights: List[str] = Field(default_factory=list)
+
+
+class ErrorResponse(BaseModel):
+    error_code: str
+    message: str
+    retry_allowed: bool

@@ -8,3 +8,4 @@ openai==1.52.2
 anthropic==0.37.1
 email-validator==2.2.0
 python-multipart==0.0.22
+slowapi==0.1.9

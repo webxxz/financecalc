@@ -37,8 +37,11 @@ async function request<T>(path: string, init: RequestOptions): Promise<T> {
   if (!response.ok) {
     let detail = "Request failed";
     try {
-      const err = (await response.json()) as { detail?: string };
-      detail = err.detail || detail;
+      const err = (await response.json()) as { detail?: string; message?: string; error_code?: string };
+      detail = err.message || err.detail || detail;
+      if (err.error_code) {
+        detail = `${detail} (${err.error_code})`;
+      }
     } catch {
       // no-op
     }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { type User, onAuthStateChanged } from "firebase/auth";
+import { toast } from "sonner";
 
 import { createGoal, deleteGoal, getUserDashboard, updateGoal, type GoalPayload } from "@/lib/api";
 import { auth } from "@/lib/firebase-client";
@@ -71,7 +72,9 @@ export default function DashboardClient() {
       setCalculations(result.calculations || []);
       setHistory(result.history || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load dashboard");
+      const message = err instanceof Error ? err.message : "Unable to load dashboard";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -89,10 +92,13 @@ export default function DashboardClient() {
       const token = await user.getIdToken();
       await createGoal(token, goalForm);
       setMessage("Goal saved.");
+      toast.success("Goal saved.");
       setGoalForm({ title: "", target_amount: 0, current_amount: 0, target_date: "", notes: "" });
       await loadDashboard();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to save goal");
+      const message = err instanceof Error ? err.message : "Unable to save goal";
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -104,9 +110,12 @@ export default function DashboardClient() {
       const token = await user.getIdToken();
       await updateGoal(token, goal.id, { current_amount: goal.current_amount + goal.target_amount * QUICK_PROGRESS_INCREMENT });
       setMessage("Goal progress updated.");
+      toast.success("Goal progress updated.");
       await loadDashboard();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update goal");
+      const message = err instanceof Error ? err.message : "Unable to update goal";
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -118,9 +127,12 @@ export default function DashboardClient() {
       const token = await user.getIdToken();
       await deleteGoal(token, goalId);
       setMessage("Goal deleted.");
+      toast.success("Goal deleted.");
       await loadDashboard();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to delete goal");
+      const message = err instanceof Error ? err.message : "Unable to delete goal";
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -135,7 +147,13 @@ export default function DashboardClient() {
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">Saved calculations, goals, and financial history in one place.</p>
       </div>
 
-      {loading ? <p className="text-sm">Loading dashboard...</p> : null}
+      {loading ? (
+        <div className="space-y-4">
+          <div className="h-5 w-44 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-24 w-full animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-800" />
+          <div className="h-24 w-full animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-800" />
+        </div>
+      ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {message ? <p className="text-sm text-emerald-600">{message}</p> : null}
 

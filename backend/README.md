@@ -10,7 +10,9 @@ Production-oriented backend scaffold for FinanceCalc.app.
 - AI assistant tool-router (OpenAI primary, Claude fallback, deterministic backup parser)
 - Firebase Auth token verification + Firestore persistence helpers
 - Contact API integration with Resend + spam/rate-limit guardrails
-- Security middleware (CORS, host filtering, request-size checks, rate limiting)
+- Security middleware (CORS, host filtering, request-size checks, global and endpoint rate limiting)
+- Structured JSON logging for API latency and AI tool-usage events
+- Standardized global exception handling with retry hints
 
 ## Run locally
 
@@ -33,6 +35,7 @@ uvicorn app.main:app --reload --port 8000
 - `POST /api/retirement`
 - `POST /api/exchange-rate`
 - `POST /api/ai/assistant`
+- `POST /api/ai/chat`
 - `POST /api/contact`
 - `POST /api/user/calculations` (Firebase Bearer token required)
 - `GET /api/user/calculations` (Firebase Bearer token required)

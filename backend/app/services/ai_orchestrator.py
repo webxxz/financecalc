@@ -278,6 +278,15 @@ async def execute_tool(request: AIAssistantRequest) -> Dict[str, Any]:
     combined = await execute_tools(decisions)
 
     first_decision = decisions[0] if decisions else None
+    logger.info(
+        "ai_tools_executed",
+        extra={
+            "event": "ai_tools_executed",
+            "tools_used": combined["tools_used"],
+            "tool_count": len(combined["tools_used"]),
+            "query_length": len(request.query),
+        },
+    )
     response = AIAssistantResponse(
         result=combined["result"],
         summary=combined["summary"],

@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     allowed_origins_raw: str = Field(default="http://localhost:3000", alias="ALLOWED_ORIGINS")
     allowed_hosts_raw: str = Field(default="localhost,127.0.0.1,testserver", alias="ALLOWED_HOSTS")
     requests_per_minute: int = Field(default=60, alias="REQUESTS_PER_MINUTE")
+    ai_chat_rate_limit: str = Field(default="5/minute", alias="AI_CHAT_RATE_LIMIT")
+    contact_rate_limit: str = Field(default="3/minute", alias="CONTACT_RATE_LIMIT")
+    log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
     openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
     claude_api_key: str = Field(default="", alias="CLAUDE_API_KEY")
