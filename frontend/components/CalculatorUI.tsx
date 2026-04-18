@@ -245,9 +245,9 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
             {field.showSlider && field.type !== "text" ? (
               <div className="mt-2">
                 <div className="mb-1 flex items-center justify-between">
-                  <label htmlFor={`${field.name}-slider`} className="text-xs text-zinc-600 dark:text-zinc-300">
+                  <span className="text-xs text-zinc-600 dark:text-zinc-300">
                     {field.label}
-                  </label>
+                  </span>
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800">
                     {values[field.name] ?? ""}
                   </span>
@@ -260,6 +260,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
                   step={field.step ?? "any"}
                   value={values[field.name] ?? field.min ?? 0}
                   onChange={(e) => setValues((prev) => ({ ...prev, [field.name]: e.target.value }))}
+                  aria-label={`${field.label} value`}
                   className="mt-1 w-full accent-indigo-600"
                 />
               </div>
