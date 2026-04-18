@@ -44,6 +44,7 @@ async def calculator_catalog() -> dict:
         "emi",
         "sip",
         "mortgage",
+        "mortgage-refinance",
         "tax",
         "retirement",
         "exchange-rate",
@@ -55,7 +56,7 @@ async def calculator_catalog() -> dict:
     return {
         "categories": {
             "Personal Finance": with_status(["budget-planner", "net-worth"]),
-            "Loans & Mortgages": with_status(["emi", "mortgage", "loan-tenure"]),
+            "Loans & Mortgages": with_status(["emi", "mortgage", "mortgage-refinance", "loan-tenure"]),
             "Investments & Wealth": with_status(["sip", "fd", "rd"]),
             "Retirement": with_status(["retirement"]),
             "Taxation": with_status(["tax"]),

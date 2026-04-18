@@ -10,8 +10,10 @@ from openai import AsyncOpenAI
 from app.ai.prompts import INTENT_ROUTER_PROMPT
 from app.ai.tools import OPENAI_TOOLS, TOOLS
 from app.core.config import get_settings
+from app.core.refinance_constants import STRONG_REFINANCE_CANDIDATE_THRESHOLD
 from app.schemas.ai import AIAssistantRequest, AIAssistantResponse, ToolDecision
 from app.schemas.calculators import EMIRequest, MortgageRequest, RetirementRequest, SIPRequest, TaxRequest
+from app.schemas.mortgage_refinance_schema import MortgageRefinanceRequest
 from app.services.calculators import (
     calculate_emi,
     calculate_mortgage,
@@ -20,6 +22,7 @@ from app.services.calculators import (
     calculate_tax,
 )
 from app.services.exchange_rates import convert_currency
+from app.services.mortgage_refinance_service import calculate_mortgage_refinance
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -66,6 +69,20 @@ def _fallback_intent(query: str) -> List[ToolDecision]:
 
     if "sip" in lowered and len(nums) >= 3:
         return [ToolDecision(tool="calculate_sip", arguments={"monthly_investment": nums[0], "annual_return_rate": nums[1], "years": int(nums[2])})]
+    if "refinance" in lowered and len(nums) >= 5:
+        return [
+            ToolDecision(
+                tool="calculate_mortgage_refinance",
+                arguments={
+                    "current_loan_balance": nums[0],
+                    "current_annual_interest_rate": nums[1],
+                    "current_remaining_term_months": int(nums[2]),
+                    "new_annual_interest_rate": nums[3],
+                    "new_loan_term_months": int(nums[4]),
+                    "closing_costs": nums[5] if len(nums) > 5 else 0,
+                },
+            )
+        ]
     if "mortgage" in lowered and len(nums) >= 4:
         return [
             ToolDecision(
@@ -202,6 +219,23 @@ async def _execute_single_tool(decision: ToolDecision) -> Dict[str, Any]:
         return calculate_sip(SIPRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_mortgage":
         return calculate_mortgage(MortgageRequest(**decision.arguments)).model_dump()
+    elif decision.tool == "calculate_mortgage_refinance":
+        output = calculate_mortgage_refinance(MortgageRefinanceRequest(**decision.arguments)).model_dump()
+        result = output.get("result", {})
+        net_savings = result.get("net_savings_after_costs", 0)
+        break_even = result.get("break_even_months")
+        if net_savings > STRONG_REFINANCE_CANDIDATE_THRESHOLD:
+            output["insights"].append("AI interpretation: Strong Refinance Candidate based on net savings threshold.")
+        elif net_savings > 0:
+            output["insights"].append("AI interpretation: Potential Refinance Candidate with positive net savings.")
+        else:
+            output["insights"].append("AI interpretation: Likely Not Beneficial under current assumptions.")
+        if break_even is not None:
+            output["insights"].append(
+                f"AI interpretation: break-even is around {break_even} months; compare with your expected holding period."
+            )
+        output["insights"].append("AI interpretation follows refinance threshold and break-even guidance rules.")
+        return output
     elif decision.tool == "calculate_tax":
         return calculate_tax(TaxRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_retirement":

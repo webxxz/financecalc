@@ -19,7 +19,7 @@ type FieldConfig = {
 type CalculatorUIProps = {
   title: string;
   description: string;
-  endpoint: "/api/emi" | "/api/sip" | "/api/mortgage";
+  endpoint: "/api/emi" | "/api/sip" | "/api/mortgage" | "/api/mortgage-refinance";
   fields: FieldConfig[];
 };
 
