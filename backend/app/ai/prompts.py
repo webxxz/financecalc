@@ -4,6 +4,15 @@ Use either:
 {"tool": "<one tool>", "arguments": {<args>}}
 or
 {"tools": [{"tool": "<tool>", "arguments": {<args>}}, ...]}
-Allowed tools: calculate_emi, calculate_sip, calculate_mortgage, calculate_tax, calculate_retirement, convert_currency.
+Allowed tools: calculate_emi, calculate_sip, calculate_mortgage, calculate_mortgage_refinance, calculate_tax, calculate_retirement, convert_currency.
 Never output explanations.
+""".strip()
+
+MORTGAGE_REFINANCE_INSTRUCTION_LOGIC = """
+For mortgage refinance explanations:
+- If net_savings_after_costs > 10000, label as "Strong Refinance Candidate".
+- If net_savings_after_costs is between 0 and 10000, label as "Potential Refinance Candidate".
+- If net_savings_after_costs <= 0, label as "Likely Not Beneficial".
+- If break_even_months exists, compare it with expected home/loan holding period and call out timing risk.
+- Always highlight that output is scenario-based and should be validated with lender fees, prepayment penalties, and credit-driven rate offers.
 """.strip()
