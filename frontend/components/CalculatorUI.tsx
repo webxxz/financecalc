@@ -226,9 +226,12 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
 
       <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
         {fields.map((field) => (
-          <label key={field.name} className="text-sm">
-            <span className="mb-1 block font-medium">{field.label}</span>
+          <div key={field.name} className="text-sm">
+            <label htmlFor={`${field.name}-input`} className="mb-1 block font-medium">
+              {field.label}
+            </label>
             <input
+              id={`${field.name}-input`}
               type={field.type || "number"}
               min={field.min}
               max={field.max}
@@ -242,12 +245,15 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
             {field.showSlider && field.type !== "text" ? (
               <div className="mt-2">
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-xs text-zinc-600 dark:text-zinc-300">{field.label} Slider</span>
+                  <label htmlFor={`${field.name}-slider`} className="text-xs text-zinc-600 dark:text-zinc-300">
+                    {field.label} Slider
+                  </label>
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800">
                     {values[field.name] ?? ""}
                   </span>
                 </div>
                 <input
+                  id={`${field.name}-slider`}
                   type="range"
                   min={field.min}
                   max={field.max}
@@ -258,7 +264,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
                 />
               </div>
             ) : null}
-          </label>
+          </div>
         ))}
 
         <div className="md:col-span-2">

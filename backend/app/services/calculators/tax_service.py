@@ -39,9 +39,6 @@ def _compute_old_regime_tax(annual_income: float, other_deductions: float) -> tu
     taxable_income = max(0.0, annual_income - 50000 - other_deductions)
     tax_before_cess = _slab_tax(taxable_income, OLD_SLABS)
     if taxable_income <= 500000:
-        tax_before_cess = 0.0
-        cess = 0.0
-        total_tax = 0.0
         return taxable_income, 0.0, 0.0, 0.0
     cess = tax_before_cess * CESS_RATE
     total_tax = tax_before_cess + cess
@@ -52,9 +49,6 @@ def _compute_new_regime_tax(annual_income: float) -> tuple[float, float, float, 
     taxable_income = max(0.0, annual_income - 75000)
     tax_before_cess = _slab_tax(taxable_income, NEW_SLABS)
     if taxable_income <= 700000:
-        tax_before_cess = 0.0
-        cess = 0.0
-        total_tax = 0.0
         return taxable_income, 0.0, 0.0, 0.0
     cess = tax_before_cess * CESS_RATE
     total_tax = tax_before_cess + cess
@@ -80,12 +74,14 @@ def calculate_tax(data: TaxRequest) -> StandardResponse:
         total_tax = new_total_tax
 
     net_income_after_tax = gross_income - total_tax
+    rebate_applies = (regime == "old" and taxable_income <= 500000) or (regime != "old" and taxable_income <= 700000)
     effective_tax_rate = (total_tax / gross_income * 100) if gross_income > 0 else 0.0
-    if total_tax == 0.0:
+    if rebate_applies:
         tax_before_cess = 0.0
         cess = 0.0
         total_tax = 0.0
         effective_tax_rate = 0.0
+        net_income_after_tax = gross_income
     monthly_take_home = net_income_after_tax / 12 if gross_income > 0 else 0.0
 
     if old_total_tax < new_total_tax:
