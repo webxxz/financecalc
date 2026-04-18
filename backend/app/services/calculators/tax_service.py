@@ -38,25 +38,21 @@ def _slab_tax(taxable_income: float, slabs: list[tuple[float, float]]) -> float:
 def _compute_old_regime_tax(annual_income: float, other_deductions: float) -> tuple[float, float, float, float]:
     taxable_income = max(0.0, annual_income - 50000 - other_deductions)
     tax_before_cess = _slab_tax(taxable_income, OLD_SLABS)
-    rebate_applied = False
     if taxable_income <= 500000:
-        tax_before_cess = 0.0
-        rebate_applied = True
+        return taxable_income, 0.0, 0.0, 0.0
     cess = tax_before_cess * CESS_RATE
     total_tax = tax_before_cess + cess
-    return taxable_income, tax_before_cess, cess, total_tax if not rebate_applied else 0.0
+    return taxable_income, tax_before_cess, cess, total_tax
 
 
 def _compute_new_regime_tax(annual_income: float) -> tuple[float, float, float, float]:
     taxable_income = max(0.0, annual_income - 75000)
     tax_before_cess = _slab_tax(taxable_income, NEW_SLABS)
-    rebate_applied = False
     if taxable_income <= 700000:
-        tax_before_cess = 0.0
-        rebate_applied = True
+        return taxable_income, 0.0, 0.0, 0.0
     cess = tax_before_cess * CESS_RATE
     total_tax = tax_before_cess + cess
-    return taxable_income, tax_before_cess, cess, total_tax if not rebate_applied else 0.0
+    return taxable_income, tax_before_cess, cess, total_tax
 
 
 def calculate_tax(data: TaxRequest) -> StandardResponse:
