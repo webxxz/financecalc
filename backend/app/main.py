@@ -100,9 +100,7 @@ async def security_middleware(request: Request, call_next):
 
 
 def _retry_allowed(status_code: int) -> bool:
-    if status_code >= 500:
-        return True
-    return status_code in {429}
+    return status_code >= 500 or status_code == 429
 
 
 def _error_code_from_status(status_code: int) -> str:

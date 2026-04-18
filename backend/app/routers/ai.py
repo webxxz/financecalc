@@ -11,11 +11,13 @@ settings = get_settings()
 
 @router.post("/assistant", response_model=AIAssistantResponse)
 @limiter.limit(settings.ai_chat_rate_limit)
-async def ai_assistant_endpoint(_request: Request, payload: AIAssistantRequest) -> dict:
+async def ai_assistant_endpoint(request: Request, payload: AIAssistantRequest) -> dict:
+    # request is required for slowapi's limiter key function.
     return await execute_tool(payload)
 
 
 @router.post("/chat", response_model=AIAssistantResponse)
 @limiter.limit(settings.ai_chat_rate_limit)
-async def ai_chat_endpoint(_request: Request, payload: AIAssistantRequest) -> dict:
+async def ai_chat_endpoint(request: Request, payload: AIAssistantRequest) -> dict:
+    # request is required for slowapi's limiter key function.
     return await execute_tool(payload)

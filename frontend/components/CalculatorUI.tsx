@@ -102,7 +102,6 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
     try {
       const data = await postCalculator(endpoint, payload);
       setResult(data);
-      toast.success("Calculation complete.");
 
       if (auth?.currentUser) {
         const token = await auth.currentUser.getIdToken();
@@ -111,7 +110,9 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
           input_data: payload,
           output_data: data.result,
         });
-        toast.success("Saved to your dashboard history.");
+        toast.success("Calculation complete and saved to your dashboard history.");
+      } else {
+        toast.success("Calculation complete.");
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unable to calculate";
