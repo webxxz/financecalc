@@ -1,38 +1,125 @@
 from app.schemas.calculators import TaxRequest
 from app.schemas.common import StandardResponse
 
-# Simplified effective planning rates (not legal/marginal slab rates).
-# These are used only for quick product-level estimates and should be
-# replaced with jurisdiction-specific slab engines for compliance use cases.
-TAX_RATE_BY_COUNTRY = {
-    "US": 0.22,
-    "IN": 0.20,
-    "GB": 0.20,
-    "DE": 0.25,
-    "FR": 0.25,
-    "CA": 0.24,
-}
+
+CESS_RATE = 0.04
+
+
+OLD_SLABS = [
+    (250000, 0.0),
+    (500000, 0.05),
+    (1000000, 0.20),
+    (float("inf"), 0.30),
+]
+
+NEW_SLABS = [
+    (300000, 0.0),
+    (700000, 0.05),
+    (1000000, 0.10),
+    (1200000, 0.15),
+    (1500000, 0.20),
+    (float("inf"), 0.30),
+]
+
+
+def _slab_tax(taxable_income: float, slabs: list[tuple[float, float]]) -> float:
+    tax = 0.0
+    lower = 0.0
+    for upper, rate in slabs:
+        if taxable_income <= lower:
+            break
+        slab_income = min(taxable_income, upper) - lower
+        if slab_income > 0:
+            tax += slab_income * rate
+        lower = upper
+    return tax
+
+
+def _compute_old_regime_tax(annual_income: float, other_deductions: float) -> tuple[float, float, float, float]:
+    taxable_income = max(0.0, annual_income - 50000 - other_deductions)
+    tax_before_cess = _slab_tax(taxable_income, OLD_SLABS)
+    rebate_applied = False
+    if taxable_income <= 500000:
+        tax_before_cess = 0.0
+        rebate_applied = True
+    cess = tax_before_cess * CESS_RATE
+    total_tax = tax_before_cess + cess
+    return taxable_income, tax_before_cess, cess, total_tax if not rebate_applied else 0.0
+
+
+def _compute_new_regime_tax(annual_income: float) -> tuple[float, float, float, float]:
+    taxable_income = max(0.0, annual_income - 75000)
+    tax_before_cess = _slab_tax(taxable_income, NEW_SLABS)
+    rebate_applied = False
+    if taxable_income <= 700000:
+        tax_before_cess = 0.0
+        rebate_applied = True
+    cess = tax_before_cess * CESS_RATE
+    total_tax = tax_before_cess + cess
+    return taxable_income, tax_before_cess, cess, total_tax if not rebate_applied else 0.0
 
 
 def calculate_tax(data: TaxRequest) -> StandardResponse:
-    country = data.country_code.upper()
-    tax_rate = TAX_RATE_BY_COUNTRY.get(country, 0.22)
-    taxable_income = max(0.0, data.annual_income - data.deductions)
-    estimated_tax = taxable_income * tax_rate
-    net_income = data.annual_income - estimated_tax
+    gross_income = data.annual_income
+    regime = data.regime.lower()
+
+    old_taxable, old_tax_before_cess, old_cess, old_total_tax = _compute_old_regime_tax(gross_income, data.other_deductions)
+    new_taxable, new_tax_before_cess, new_cess, new_total_tax = _compute_new_regime_tax(gross_income)
+
+    if regime == "old":
+        taxable_income = old_taxable
+        tax_before_cess = old_tax_before_cess
+        cess = old_cess
+        total_tax = old_total_tax
+    else:
+        taxable_income = new_taxable
+        tax_before_cess = new_tax_before_cess
+        cess = new_cess
+        total_tax = new_total_tax
+
+    net_income_after_tax = gross_income - total_tax
+    effective_tax_rate = (total_tax / gross_income * 100) if gross_income > 0 else 0.0
+    monthly_take_home = net_income_after_tax / 12 if gross_income > 0 else 0.0
+
+    if old_total_tax < new_total_tax:
+        better_regime_note = "For this income and deduction profile, the old regime appears more tax-efficient."
+    elif new_total_tax < old_total_tax:
+        better_regime_note = "For this income and deduction profile, the new regime appears more tax-efficient."
+    else:
+        better_regime_note = "Both old and new regimes result in nearly the same tax outgo for this profile."
+
+    if regime == "old":
+        rebate_note = (
+            "Rebate u/s 87A applied since taxable income is up to ₹5,00,000 under old regime."
+            if taxable_income <= 500000
+            else "No rebate u/s 87A is available because taxable income exceeds ₹5,00,000 under old regime."
+        )
+    else:
+        rebate_note = (
+            "Rebate u/s 87A applied since taxable income is up to ₹7,00,000 under new regime."
+            if taxable_income <= 700000
+            else "No rebate u/s 87A is available because taxable income exceeds ₹7,00,000 under new regime."
+        )
 
     return StandardResponse(
         result={
-            "country_code": country,
-            "tax_rate": tax_rate,
+            "gross_income": round(gross_income, 2),
             "taxable_income": round(taxable_income, 2),
-            "estimated_tax": round(estimated_tax, 2),
-            "net_income_after_tax": round(net_income, 2),
+            "tax_before_cess": round(tax_before_cess, 2),
+            "cess": round(cess, 2),
+            "total_tax": round(total_tax, 2),
+            "net_income_after_tax": round(net_income_after_tax, 2),
+            "effective_tax_rate": round(effective_tax_rate, 2),
+            "monthly_take_home": round(monthly_take_home, 2),
         },
-        summary="Tax estimate uses a simplified country-level effective rate for quick planning.",
+        summary=(
+            f"On ₹{gross_income:,.2f} income under the {regime} regime, your total tax is ₹{total_tax:,.2f} "
+            f"(effective rate {effective_tax_rate:.2f}%)."
+        ),
         insights=[
-            "This estimate is for planning and not a legal tax filing output.",
-            "Adding eligible deductions can reduce taxable income.",
-            "Use country-specific slabs in later iterations for precision.",
+            better_regime_note,
+            rebate_note,
+            "Cess at 4% is applied on tax amount after slab and rebate adjustments.",
+            "In old regime, standard deduction ₹50,000 and your declared deductions are considered; in new regime, only ₹75,000 standard deduction is considered.",
         ],
     )
