@@ -1,5 +1,6 @@
 import logging
 from time import perf_counter
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -68,7 +69,7 @@ async def security_middleware(request: Request, call_next):
                 ).model_dump(),
             )
 
-    status_code: int | None = None
+    status_code: Optional[int] = None
     try:
         global_rate_limiter.check(request)
         response = await call_next(request)

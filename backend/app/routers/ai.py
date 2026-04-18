@@ -13,7 +13,7 @@ settings = get_settings()
 @limiter.limit(settings.ai_chat_rate_limit)
 async def ai_assistant_endpoint(request: Request, payload: AIAssistantRequest) -> dict:
     # request is required for slowapi's limiter key function.
-    _ = request
+    del request
     return await execute_tool(payload)
 
 
@@ -21,5 +21,5 @@ async def ai_assistant_endpoint(request: Request, payload: AIAssistantRequest) -
 @limiter.limit(settings.ai_chat_rate_limit)
 async def ai_chat_endpoint(request: Request, payload: AIAssistantRequest) -> dict:
     # request is required for slowapi's limiter key function.
-    _ = request
+    del request
     return await execute_tool(payload)
