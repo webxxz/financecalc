@@ -68,7 +68,7 @@ async def security_middleware(request: Request, call_next):
                 ).model_dump(),
             )
 
-    status_code = 500
+    status_code: int | None = None
     try:
         global_rate_limiter.check(request)
         response = await call_next(request)
@@ -84,7 +84,7 @@ async def security_middleware(request: Request, call_next):
                 "event": "api_request_completed",
                 "method": request.method,
                 "path": request.url.path,
-                "status_code": status_code,
+                "status_code": status_code or 500,
                 "latency_ms": latency_ms,
                 "client_ip": get_remote_address(request),
             },
