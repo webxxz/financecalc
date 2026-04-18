@@ -6,7 +6,7 @@ Use either:
 {"tool": "<one tool>", "arguments": {<args>}}
 or
 {"tools": [{"tool": "<tool>", "arguments": {<args>}}, ...]}
-Allowed tools: calculate_emi, calculate_sip, calculate_mortgage, calculate_mortgage_refinance, calculate_tax, calculate_retirement, convert_currency.
+Allowed tools: calculate_credit_card_payoff, calculate_emi, calculate_investment_growth, calculate_sip, calculate_mortgage, calculate_mortgage_refinance, calculate_tax, calculate_retirement, calculate_retirement_withdrawal, convert_currency.
 Never output explanations.
 """.strip()
 

@@ -39,10 +39,13 @@ uvicorn app.main:app --reload --port 8000
 
 - `GET /api/health`
 - `POST /api/emi`
+- `POST /api/credit-card-payoff`
+- `POST /api/investment-growth`
 - `POST /api/sip`
 - `POST /api/mortgage`
 - `POST /api/tax`
 - `POST /api/retirement`
+- `POST /api/retirement-withdrawal`
 - `POST /api/exchange-rate`
 - `POST /api/ai/assistant`
 - `POST /api/ai/chat`

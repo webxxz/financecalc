@@ -40,6 +40,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <Link href="/calculators/emi">EMI</Link>
                 <Link href="/calculators/sip">SIP</Link>
                 <Link href="/calculators/mortgage">Mortgage</Link>
+                <Link href="/calculators/credit-card-payoff">Card Payoff</Link>
+                <Link href="/calculators/investment-growth">Investment Growth</Link>
                 <Link href="/learn/what-is-emi">Learn</Link>
                 <Link href="/dashboard">Dashboard</Link>
                 <Link href="/contact">Contact</Link>

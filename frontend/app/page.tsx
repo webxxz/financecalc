@@ -35,6 +35,9 @@ export default function Home() {
           { href: "/calculators/emi", title: "EMI Calculator", desc: "Loan EMI breakdown with insights." },
           { href: "/calculators/sip", title: "SIP Calculator", desc: "Investment growth projection." },
           { href: "/calculators/mortgage", title: "Mortgage Calculator", desc: "Monthly housing cost estimator." },
+          { href: "/calculators/credit-card-payoff", title: "Credit Card Payoff", desc: "Debt-free timeline and interest cost." },
+          { href: "/calculators/investment-growth", title: "Investment Growth", desc: "Compounding + contribution modeling." },
+          { href: "/calculators/retirement-withdrawal", title: "Retirement Withdrawal", desc: "4% rule readiness and funding gap." },
         ].map((card) => (
           <Link
             key={card.href}
