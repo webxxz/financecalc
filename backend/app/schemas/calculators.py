@@ -13,6 +13,25 @@ class SIPRequest(BaseModel):
     years: PositiveInt
 
 
+class FDRequest(BaseModel):
+    principal: PositiveFloat
+    annual_interest_rate: float = Field(ge=0, le=100)
+    tenure_years: PositiveFloat
+    compounding_frequency: PositiveInt = Field(default=4)
+
+
+class RDRequest(BaseModel):
+    monthly_deposit: PositiveFloat
+    annual_interest_rate: float = Field(ge=0, le=100)
+    tenure_months: PositiveInt
+
+
+class PPFRequest(BaseModel):
+    annual_investment: PositiveFloat
+    tenure_years: int = Field(ge=15, le=50)
+    current_ppf_rate: float = Field(default=7.1, ge=0, le=100)
+
+
 class MortgageRequest(BaseModel):
     property_price: PositiveFloat
     down_payment: float = Field(ge=0)
@@ -23,9 +42,35 @@ class MortgageRequest(BaseModel):
 
 
 class TaxRequest(BaseModel):
-    annual_income: float = Field(gt=0)
-    deductions: float = Field(default=0, ge=0)
-    country_code: str = Field(default="US", min_length=2, max_length=2)
+    annual_income: float = Field(ge=0)
+    other_deductions: float = Field(default=0, ge=0)
+    regime: str = Field(default="new", pattern="^(old|new)$")
+
+
+class CarLoanRequest(BaseModel):
+    car_price: PositiveFloat
+    down_payment: float = Field(ge=0)
+    annual_interest_rate: float = Field(ge=0, le=100)
+    tenure_months: PositiveInt
+
+
+class HomeLoanEligibilityRequest(BaseModel):
+    monthly_income: PositiveFloat
+    monthly_obligations: float = Field(ge=0)
+    annual_interest_rate: float = Field(ge=0, le=100)
+    tenure_years: PositiveInt
+
+
+class LoanInterestRateRequest(BaseModel):
+    loan_amount: PositiveFloat
+    monthly_emi: PositiveFloat
+    tenure_months: PositiveInt
+
+
+class LoanTenureRequest(BaseModel):
+    loan_amount: PositiveFloat
+    annual_interest_rate: float = Field(ge=0, le=100)
+    monthly_emi: PositiveFloat
 
 
 class RetirementRequest(BaseModel):

@@ -20,13 +20,21 @@ type CalculatorUIProps = {
   title: string;
   description: string;
   endpoint:
+    | "/api/car-loan"
     | "/api/credit-card-payoff"
     | "/api/emi"
+    | "/api/fd"
+    | "/api/home-loan-eligibility"
     | "/api/investment-growth"
+    | "/api/loan-interest-rate"
+    | "/api/loan-tenure"
     | "/api/mortgage"
     | "/api/mortgage-refinance"
+    | "/api/ppf"
+    | "/api/rd"
     | "/api/retirement-withdrawal"
-    | "/api/sip";
+    | "/api/sip"
+    | "/api/tax";
   fields: FieldConfig[];
 };
 
@@ -41,6 +49,8 @@ const CURRENCY_LOCALE: Record<(typeof SUPPORTED_CURRENCIES)[number], string> = {
 const MONEY_FIELDS = new Set([
   "annual_contribution",
   "annual_income",
+  "car_price",
+  "cess",
   "annual_property_tax",
   "annual_home_insurance",
   "current_savings",
@@ -48,6 +58,7 @@ const MONEY_FIELDS = new Set([
   "estimated_returns",
   "estimated_tax",
   "future_value",
+  "gross_income",
   "funded_surplus",
   "funding_gap",
   "initial_investment",
@@ -68,15 +79,26 @@ const MONEY_FIELDS = new Set([
   "monthly_home_insurance",
   "monthly_investment",
   "monthly_mortgage_payment",
+  "monthly_emi_at_max",
   "monthly_property_tax",
   "net_income_after_tax",
+  "recommended_down_payment",
+  "max_eligible_loan",
+  "max_property_value",
+  "maturity_amount",
+  "monthly_take_home",
   "projected_retirement_corpus",
   "property_price",
   "target_amount",
+  "tax_before_cess",
+  "tax_saved_80c",
+  "taxable_income",
+  "total_deposited",
   "total_interest",
   "total_invested",
   "total_monthly_housing_cost",
   "total_payment",
+  "total_tax",
 ]);
 
 function formatFieldValue(key: string, value: unknown, currency: (typeof SUPPORTED_CURRENCIES)[number]): string {
