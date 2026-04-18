@@ -39,6 +39,9 @@ def _compute_old_regime_tax(annual_income: float, other_deductions: float) -> tu
     taxable_income = max(0.0, annual_income - 50000 - other_deductions)
     tax_before_cess = _slab_tax(taxable_income, OLD_SLABS)
     if taxable_income <= 500000:
+        tax_before_cess = 0.0
+        cess = 0.0
+        total_tax = 0.0
         return taxable_income, 0.0, 0.0, 0.0
     cess = tax_before_cess * CESS_RATE
     total_tax = tax_before_cess + cess
@@ -49,6 +52,9 @@ def _compute_new_regime_tax(annual_income: float) -> tuple[float, float, float, 
     taxable_income = max(0.0, annual_income - 75000)
     tax_before_cess = _slab_tax(taxable_income, NEW_SLABS)
     if taxable_income <= 700000:
+        tax_before_cess = 0.0
+        cess = 0.0
+        total_tax = 0.0
         return taxable_income, 0.0, 0.0, 0.0
     cess = tax_before_cess * CESS_RATE
     total_tax = tax_before_cess + cess
@@ -75,6 +81,11 @@ def calculate_tax(data: TaxRequest) -> StandardResponse:
 
     net_income_after_tax = gross_income - total_tax
     effective_tax_rate = (total_tax / gross_income * 100) if gross_income > 0 else 0.0
+    if total_tax == 0.0:
+        tax_before_cess = 0.0
+        cess = 0.0
+        total_tax = 0.0
+        effective_tax_rate = 0.0
     monthly_take_home = net_income_after_tax / 12 if gross_income > 0 else 0.0
 
     if old_total_tax < new_total_tax:
@@ -119,3 +130,14 @@ def calculate_tax(data: TaxRequest) -> StandardResponse:
             "In old regime, standard deduction ₹50,000 and your declared deductions are considered; in new regime, only ₹75,000 standard deduction is considered.",
         ],
     )
+
+
+# Test: income=700000, regime=new, deductions=0
+#   taxable = 700000 - 75000 = 625000 → tax = 25000*5% = 12500
+#   rebate applies (625000 ≤ 700000) → total_tax = 0
+# Test: income=700001, regime=new, deductions=0
+#   taxable = 700001 - 75000 = 625001 → rebate does NOT apply
+#   tax = 25001 * 5% = 1250.05 → cess = 50.002 → total = 1300.05
+# Test: income=500000, regime=old, deductions=0
+#   taxable = 500000 - 50000 = 450000 → tax = 200000*5% = 10000
+#   rebate applies (450000 ≤ 500000) → total_tax = 0

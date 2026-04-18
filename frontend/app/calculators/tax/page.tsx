@@ -1,22 +1,12 @@
-import CalculatorUI from "@/components/CalculatorUI";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Income Tax Calculator | FinanceCalc",
-  description: "Calculate FY 2025-26 income tax under old or new regime.",
+import TaxCalculatorClient from "./tax-calculator-client";
+
+export const metadata: Metadata = {
+  title: "Income Tax Calculator FY2025-26 | FinanceCalc",
+  description: "Calculate your income tax for FY 2025-26 under old and new regime with 87A rebate.",
 };
 
 export default function TaxCalculatorPage() {
-  return (
-    <CalculatorUI
-      title="Income Tax Calculator"
-      description="Estimate taxable income, total tax, and take-home pay under old vs new tax regime for FY 2025-26."
-      endpoint="/api/tax"
-      fields={[
-        { name: "annual_income", label: "Annual Income (₹)", placeholder: "800000", min: 0 },
-        { name: "other_deductions", label: "Other Deductions u/s 80C etc. (₹)", placeholder: "150000", min: 0 },
-        // TODO: replace with a dropdown/select input for regime selection.
-        { name: "regime", label: "Tax Regime", type: "text", placeholder: "new" },
-      ]}
-    />
-  );
+  return <TaxCalculatorClient />;
 }

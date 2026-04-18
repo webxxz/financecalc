@@ -20,9 +20,9 @@ export default function SIPPage() {
         description="Project long-term investment growth with monthly contribution, return assumption, and time horizon."
         endpoint="/api/sip"
         fields={[
-          { name: "monthly_investment", label: "Monthly Investment", min: 1 },
-          { name: "annual_return_rate", label: "Expected Annual Return (%)", min: 0, step: 0.01 },
-          { name: "years", label: "Years", min: 1, step: 1 },
+          { name: "monthly_investment", label: "Monthly Investment", min: 1, max: 500000, showSlider: true },
+          { name: "annual_return_rate", label: "Expected Annual Return (%)", min: 0, max: 30, step: 0.01, showSlider: true },
+          { name: "tenure_years", label: "Years", min: 1, max: 40, step: 1, showSlider: true },
         ]}
       />
       <AffiliateSection title="Mutual Fund Partners" description="Affiliate placeholder: compare SIP-friendly investment platforms and fees." />
