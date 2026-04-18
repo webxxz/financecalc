@@ -7,9 +7,10 @@ from anthropic import AsyncAnthropic
 from fastapi import HTTPException
 from openai import AsyncOpenAI
 
-from app.ai.prompts import INTENT_ROUTER_PROMPT, MORTGAGE_REFINANCE_INSTRUCTION_LOGIC
+from app.ai.prompts import INTENT_ROUTER_PROMPT
 from app.ai.tools import OPENAI_TOOLS, TOOLS
 from app.core.config import get_settings
+from app.core.refinance_constants import STRONG_REFINANCE_CANDIDATE_THRESHOLD
 from app.schemas.ai import AIAssistantRequest, AIAssistantResponse, ToolDecision
 from app.schemas.calculators import EMIRequest, MortgageRequest, RetirementRequest, SIPRequest, TaxRequest
 from app.schemas.mortgage_refinance_schema import MortgageRefinanceRequest
@@ -221,9 +222,9 @@ async def _execute_single_tool(decision: ToolDecision) -> Dict[str, Any]:
     elif decision.tool == "calculate_mortgage_refinance":
         output = calculate_mortgage_refinance(MortgageRefinanceRequest(**decision.arguments)).model_dump()
         result = output.get("result", {})
-        net_savings = float(result.get("net_savings_after_costs", 0))
+        net_savings = result.get("net_savings_after_costs", 0)
         break_even = result.get("break_even_months")
-        if net_savings > 10_000:
+        if net_savings > STRONG_REFINANCE_CANDIDATE_THRESHOLD:
             output["insights"].append("AI interpretation: Strong Refinance Candidate based on net savings threshold.")
         elif net_savings > 0:
             output["insights"].append("AI interpretation: Potential Refinance Candidate with positive net savings.")
@@ -233,7 +234,7 @@ async def _execute_single_tool(decision: ToolDecision) -> Dict[str, Any]:
             output["insights"].append(
                 f"AI interpretation: break-even is around {break_even} months; compare with your expected holding period."
             )
-        output["insights"].append(f"Instruction logic applied: {MORTGAGE_REFINANCE_INSTRUCTION_LOGIC.splitlines()[0]}")
+        output["insights"].append("AI interpretation follows refinance threshold and break-even guidance rules.")
         return output
     elif decision.tool == "calculate_tax":
         return calculate_tax(TaxRequest(**decision.arguments)).model_dump()

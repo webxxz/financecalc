@@ -1,5 +1,6 @@
 from math import pow
 
+from app.core.refinance_constants import STRONG_REFINANCE_CANDIDATE_THRESHOLD
 from app.schemas.common import StandardResponse
 from app.schemas.mortgage_refinance_schema import MortgageRefinanceRequest
 
@@ -35,15 +36,18 @@ def calculate_mortgage_refinance(data: MortgageRefinanceRequest) -> StandardResp
     gross_interest_saved = current_total_interest - new_total_interest
     net_savings_after_costs = gross_interest_saved - data.closing_costs
     monthly_payment_change = current_payment - new_payment
-    break_even_months = (
-        data.closing_costs / monthly_payment_change
-        if monthly_payment_change > 0 and data.closing_costs > 0
-        else 0.0 if data.closing_costs == 0 and monthly_payment_change >= 0
-        else None
-    )
+    if monthly_payment_change > 0 and data.closing_costs > 0:
+        break_even_months = data.closing_costs / monthly_payment_change
+    elif data.closing_costs == 0 and monthly_payment_change >= 0:
+        break_even_months = 0.0
+    else:
+        break_even_months = None
 
-    candidate_band = "Strong Refinance Candidate" if net_savings_after_costs > 10_000 else "Needs Closer Review"
-    if net_savings_after_costs <= 0:
+    if net_savings_after_costs > STRONG_REFINANCE_CANDIDATE_THRESHOLD:
+        candidate_band = "Strong Refinance Candidate"
+    elif net_savings_after_costs > 0:
+        candidate_band = "Needs Closer Review"
+    else:
         candidate_band = "Likely Not Beneficial"
 
     insights = [
