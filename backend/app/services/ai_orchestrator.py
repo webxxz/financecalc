@@ -12,12 +12,24 @@ from app.ai.tools import OPENAI_TOOLS, TOOLS
 from app.core.config import get_settings
 from app.core.refinance_constants import STRONG_REFINANCE_CANDIDATE_THRESHOLD
 from app.schemas.ai import AIAssistantRequest, AIAssistantResponse, ToolDecision
-from app.schemas.calculators import EMIRequest, MortgageRequest, RetirementRequest, SIPRequest, TaxRequest
+from app.schemas.calculators import (
+    CreditCardPayoffRequest,
+    EMIRequest,
+    InvestmentGrowthRequest,
+    MortgageRequest,
+    RetirementRequest,
+    RetirementWithdrawalRequest,
+    SIPRequest,
+    TaxRequest,
+)
 from app.schemas.mortgage_refinance_schema import MortgageRefinanceRequest
 from app.services.calculators import (
+    calculate_credit_card_payoff,
     calculate_emi,
+    calculate_investment_growth,
     calculate_mortgage,
     calculate_retirement,
+    calculate_retirement_withdrawal,
     calculate_sip,
     calculate_tax,
 )
@@ -67,8 +79,42 @@ def _fallback_intent(query: str) -> List[ToolDecision]:
         )
         return decisions
 
+    if any(k in lowered for k in ["credit card", "card debt", "payoff"]) and len(nums) >= 3:
+        return [
+            ToolDecision(
+                tool="calculate_credit_card_payoff",
+                arguments={
+                    "current_balance": nums[0],
+                    "annual_interest_rate": nums[1],
+                    "monthly_payment": nums[2],
+                },
+            )
+        ]
+    if any(k in lowered for k in ["investment growth", "compound growth", "portfolio growth"]) and len(nums) >= 4:
+        return [
+            ToolDecision(
+                tool="calculate_investment_growth",
+                arguments={
+                    "initial_investment": nums[0],
+                    "monthly_contribution": nums[1],
+                    "annual_return_rate": nums[2],
+                    "years": int(nums[3]),
+                },
+            )
+        ]
     if "sip" in lowered and len(nums) >= 3:
         return [ToolDecision(tool="calculate_sip", arguments={"monthly_investment": nums[0], "annual_return_rate": nums[1], "years": int(nums[2])})]
+    if any(k in lowered for k in ["4% rule", "withdrawal", "retirement withdrawal"]) and len(nums) >= 2:
+        return [
+            ToolDecision(
+                tool="calculate_retirement_withdrawal",
+                arguments={
+                    "annual_spending_needed": nums[0],
+                    "current_retirement_savings": nums[1],
+                    "safe_withdrawal_rate": nums[2] if len(nums) > 2 else 4,
+                },
+            )
+        ]
     if "refinance" in lowered and len(nums) >= 5:
         return [
             ToolDecision(
@@ -213,8 +259,12 @@ async def detect_tools(query: str) -> Tuple[List[ToolDecision], List[str]]:
 
 
 async def _execute_single_tool(decision: ToolDecision) -> Dict[str, Any]:
-    if decision.tool == "calculate_emi":
+    if decision.tool == "calculate_credit_card_payoff":
+        return calculate_credit_card_payoff(CreditCardPayoffRequest(**decision.arguments)).model_dump()
+    elif decision.tool == "calculate_emi":
         return calculate_emi(EMIRequest(**decision.arguments)).model_dump()
+    elif decision.tool == "calculate_investment_growth":
+        return calculate_investment_growth(InvestmentGrowthRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_sip":
         return calculate_sip(SIPRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_mortgage":
@@ -240,6 +290,8 @@ async def _execute_single_tool(decision: ToolDecision) -> Dict[str, Any]:
         return calculate_tax(TaxRequest(**decision.arguments)).model_dump()
     elif decision.tool == "calculate_retirement":
         return calculate_retirement(RetirementRequest(**decision.arguments)).model_dump()
+    elif decision.tool == "calculate_retirement_withdrawal":
+        return calculate_retirement_withdrawal(RetirementWithdrawalRequest(**decision.arguments)).model_dump()
     elif decision.tool == "convert_currency":
         converted = await convert_currency(
             base_currency=decision.arguments["base_currency"],
@@ -270,6 +322,7 @@ def _build_combined_insights(tool_runs: List[Dict[str, Any]]) -> List[str]:
     combo_insights = {
         frozenset({"calculate_mortgage", "calculate_emi"}): "Cross-check mortgage all-in cost against base EMI to validate overall house affordability.",
         frozenset({"calculate_tax", "calculate_retirement"}): "Use post-tax income assumptions when setting retirement contribution plans.",
+        frozenset({"calculate_investment_growth", "calculate_retirement_withdrawal"}): "Use projected portfolio growth with withdrawal readiness to stress-test retirement sustainability.",
     }
     for combo, combo_insight in combo_insights.items():
         if combo.issubset(used_tools):

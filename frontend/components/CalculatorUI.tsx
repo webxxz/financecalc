@@ -19,7 +19,14 @@ type FieldConfig = {
 type CalculatorUIProps = {
   title: string;
   description: string;
-  endpoint: "/api/emi" | "/api/sip" | "/api/mortgage" | "/api/mortgage-refinance";
+  endpoint:
+    | "/api/credit-card-payoff"
+    | "/api/emi"
+    | "/api/investment-growth"
+    | "/api/mortgage"
+    | "/api/mortgage-refinance"
+    | "/api/retirement-withdrawal"
+    | "/api/sip";
   fields: FieldConfig[];
 };
 
@@ -41,6 +48,19 @@ const MONEY_FIELDS = new Set([
   "estimated_returns",
   "estimated_tax",
   "future_value",
+  "funded_surplus",
+  "funding_gap",
+  "initial_investment",
+  "investment_gain",
+  "monthly_contribution",
+  "monthly_payment",
+  "payment_needed_for_36_month_payoff",
+  "required_nest_egg",
+  "sustainable_annual_withdrawal_from_current",
+  "sustainable_monthly_withdrawal_from_current",
+  "total_amount_paid",
+  "total_contributed",
+  "total_interest_paid",
   "future_value_contributions",
   "future_value_current_savings",
   "loan_principal",

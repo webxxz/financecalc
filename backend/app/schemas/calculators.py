@@ -33,3 +33,22 @@ class RetirementRequest(BaseModel):
     annual_contribution: float = Field(ge=0)
     expected_annual_return_rate: float = Field(ge=0, le=100)
     years_to_retirement: PositiveInt
+
+
+class CreditCardPayoffRequest(BaseModel):
+    current_balance: PositiveFloat
+    annual_interest_rate: float = Field(ge=0, le=100)
+    monthly_payment: PositiveFloat
+
+
+class InvestmentGrowthRequest(BaseModel):
+    initial_investment: float = Field(ge=0)
+    monthly_contribution: float = Field(ge=0)
+    annual_return_rate: float = Field(ge=0, le=100)
+    years: PositiveInt
+
+
+class RetirementWithdrawalRequest(BaseModel):
+    annual_spending_needed: PositiveFloat
+    current_retirement_savings: float = Field(ge=0)
+    safe_withdrawal_rate: float = Field(default=4, ge=1, le=10)

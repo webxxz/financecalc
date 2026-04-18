@@ -1,14 +1,33 @@
 TOOLS = {
+    "calculate_credit_card_payoff": "Estimate payoff timeline for revolving credit card debt",
     "calculate_emi": "Compute loan EMI details",
+    "calculate_investment_growth": "Project portfolio growth with lump sum and monthly contributions",
     "calculate_sip": "Compute SIP projection details",
     "calculate_mortgage": "Compute mortgage affordability details",
     "calculate_mortgage_refinance": "Compute refinance savings and break-even analysis",
     "calculate_tax": "Estimate tax using simplified country rates",
     "calculate_retirement": "Project retirement corpus growth",
+    "calculate_retirement_withdrawal": "Estimate retirement readiness using 4% withdrawal rule assumptions",
     "convert_currency": "Convert amounts using exchange-rate provider",
 }
 
 OPENAI_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_credit_card_payoff",
+            "description": "Calculate credit card payoff duration, interest paid, and target payment options.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "current_balance": {"type": "number"},
+                    "annual_interest_rate": {"type": "number"},
+                    "monthly_payment": {"type": "number"},
+                },
+                "required": ["current_balance", "annual_interest_rate", "monthly_payment"],
+            },
+        },
+    },
     {
         "type": "function",
         "function": {
@@ -44,6 +63,23 @@ OPENAI_TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "calculate_investment_growth",
+            "description": "Project future portfolio value from initial investment, monthly contributions, return rate, and years.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "initial_investment": {"type": "number"},
+                    "monthly_contribution": {"type": "number"},
+                    "annual_return_rate": {"type": "number"},
+                    "years": {"type": "integer"},
+                },
+                "required": ["initial_investment", "monthly_contribution", "annual_return_rate", "years"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "calculate_mortgage",
             "description": "Calculate mortgage affordability and monthly obligations.",
             "parameters": {
@@ -57,6 +93,22 @@ OPENAI_TOOLS = [
                     "annual_home_insurance": {"type": "number"},
                 },
                 "required": ["property_price", "down_payment", "annual_interest_rate", "tenure_years"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_retirement_withdrawal",
+            "description": "Estimate required retirement portfolio and funding gap using the 4% rule (or custom safe withdrawal rate).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "annual_spending_needed": {"type": "number"},
+                    "current_retirement_savings": {"type": "number"},
+                    "safe_withdrawal_rate": {"type": "number"},
+                },
+                "required": ["annual_spending_needed", "current_retirement_savings"],
             },
         },
     },
