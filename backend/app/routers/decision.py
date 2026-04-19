@@ -1,3 +1,5 @@
+"""Routers for structured decision and scenario APIs."""
+
 from fastapi import APIRouter, HTTPException, Request
 
 from app.schemas.decision import DecisionRequest, DecisionResponse, ScenarioRequest, ScenarioResponse
@@ -24,18 +26,20 @@ SCENARIO_MAP = {
 
 @router.post("/api/ai/decision", response_model=DecisionResponse)
 @limiter.limit("10/minute")
-async def decision_endpoint(request: Request, body: DecisionRequest):
+async def decision_endpoint(request: Request, body: DecisionRequest) -> DecisionResponse:
+    """Run AI decision engine for a user message and context."""
     result = await run_decision(
         user_message=body.message,
         conversation_history=body.conversation_history,
         context=body.context,
     )
-    return result
+    return DecisionResponse(**result)
 
 
 @router.post("/api/ai/scenario", response_model=ScenarioResponse)
 @limiter.limit("20/minute")
-async def scenario_endpoint(request: Request, body: ScenarioRequest):
+async def scenario_endpoint(request: Request, body: ScenarioRequest) -> ScenarioResponse:
+    """Execute one named financial scenario handler."""
     scenario_fn = SCENARIO_MAP.get(body.scenario)
     if not scenario_fn:
         raise HTTPException(

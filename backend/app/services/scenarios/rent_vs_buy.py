@@ -57,17 +57,31 @@ async def run_rent_vs_buy(inputs: dict) -> dict:
     total_mortgage_cost = mortgage_result.get("total_amount_paid", 0)
     future_property_value = property_price * ((1 + appreciation_rate / 100) ** tenure_years)
     investment_value = investment_result.get("future_value", 0)
+    monthly_rate = investment_return / 100 / 12
+    monthly_difference = max(monthly_mortgage - monthly_rent, 0)
+    if monthly_difference > 0:
+        if monthly_rate == 0:
+            investment_value += monthly_difference * tenure_years * 12
+        else:
+            investment_value += monthly_difference * (
+                (((1 + monthly_rate) ** (tenure_years * 12) - 1) / monthly_rate) * (1 + monthly_rate)
+            )
     total_rent_paid = monthly_rent * tenure_years * 12
 
-    buy_net_position = future_property_value - total_mortgage_cost - down_payment
+    buy_net_position = future_property_value - total_mortgage_cost
     rent_net_position = investment_value - total_rent_paid
 
     break_even_year = None
     for year in range(1, tenure_years + 1):
         prop_val = property_price * ((1 + appreciation_rate / 100) ** year)
-        mortgage_paid = monthly_mortgage * year * 12
+        mortgage_paid = down_payment + (monthly_mortgage * year * 12)
         rent_paid_yr = monthly_rent * year * 12
-        inv_val = down_payment * ((1 + investment_return / 100) ** year)
+        if monthly_rate == 0:
+            inv_val = down_payment + (monthly_difference * year * 12)
+        else:
+            inv_val = (down_payment * ((1 + investment_return / 100) ** year)) + (
+                monthly_difference * ((((1 + monthly_rate) ** (year * 12) - 1) / monthly_rate) * (1 + monthly_rate))
+            )
         if (prop_val - mortgage_paid) >= (inv_val - rent_paid_yr):
             break_even_year = year
             break

@@ -1,15 +1,21 @@
+"""Schemas for decision and scenario endpoints."""
+
 from typing import Any
 
 from pydantic import BaseModel
 
 
 class DecisionRequest(BaseModel):
+    """Request payload for AI decision endpoint."""
+
     message: str
     conversation_history: list[dict] | None = None
     context: dict | None = None
 
 
 class DecisionResponse(BaseModel):
+    """Response payload for AI decision endpoint."""
+
     status: str
     verdict: str | None
     verdict_label: str | None = None
@@ -22,11 +28,15 @@ class DecisionResponse(BaseModel):
 
 
 class ScenarioRequest(BaseModel):
+    """Request payload for scenario handler endpoint."""
+
     scenario: str
     inputs: dict[str, Any]
 
 
 class ScenarioResponse(BaseModel):
+    """Response payload for scenario handler endpoint."""
+
     scenario: str
     verdict: str
     verdict_label: str

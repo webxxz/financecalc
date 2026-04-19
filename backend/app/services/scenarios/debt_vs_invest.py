@@ -1,5 +1,8 @@
 """Pay off debt vs invest — which gives better returns?"""
 
+LTCG_EXEMPTION_AMOUNT = 100000
+LTCG_TAX_RATE = 0.10
+
 
 async def run_debt_vs_invest(inputs: dict) -> dict:
     """
@@ -25,13 +28,44 @@ async def run_debt_vs_invest(inputs: dict) -> dict:
         effective_loan_rate = loan_rate * (1 - tax_bracket / 100)
 
     monthly_loan_rate = effective_loan_rate / 100 / 12
-    interest_saved = loan * monthly_loan_rate * tenure_months * (surplus / loan)
-    interest_saved = min(interest_saved, loan * monthly_loan_rate * tenure_months)
+    if monthly_loan_rate == 0:
+        baseline_interest = 0.0
+        prepay_interest = 0.0
+    else:
+        baseline_emi = loan * monthly_loan_rate * (1 + monthly_loan_rate) ** tenure_months
+        baseline_emi /= ((1 + monthly_loan_rate) ** tenure_months) - 1
+
+        baseline_interest = 0.0
+        baseline_balance = loan
+        for _ in range(tenure_months):
+            baseline_month_interest = baseline_balance * monthly_loan_rate
+            baseline_principal = baseline_emi - baseline_month_interest
+            baseline_principal = min(baseline_principal, baseline_balance)
+            baseline_balance -= baseline_principal
+            baseline_interest += baseline_month_interest
+            if baseline_balance <= 0:
+                break
+
+        prepay_interest = 0.0
+        prepay_balance = loan
+        for _ in range(tenure_months):
+            month_interest = prepay_balance * monthly_loan_rate
+            scheduled_principal = baseline_emi - month_interest
+            total_principal = min(prepay_balance, scheduled_principal + max(surplus, 0))
+            prepay_balance -= total_principal
+            prepay_interest += month_interest
+            if prepay_balance <= 0:
+                break
+
+    interest_saved = max(0.0, baseline_interest - prepay_interest)
 
     monthly_inv_rate = inv_return / 100 / 12
-    investment_value = surplus * ((((1 + monthly_inv_rate) ** tenure_months - 1) / monthly_inv_rate) * (1 + monthly_inv_rate))
+    if monthly_inv_rate == 0:
+        investment_value = surplus * tenure_months
+    else:
+        investment_value = surplus * ((((1 + monthly_inv_rate) ** tenure_months - 1) / monthly_inv_rate) * (1 + monthly_inv_rate))
     investment_gain = investment_value - (surplus * tenure_months)
-    ltcg_tax = max(0, investment_gain - 100000) * 0.10
+    ltcg_tax = max(0, investment_gain - LTCG_EXEMPTION_AMOUNT) * LTCG_TAX_RATE
     net_investment_gain = investment_gain - ltcg_tax
 
     verdict = "invest" if net_investment_gain > interest_saved else "prepay"

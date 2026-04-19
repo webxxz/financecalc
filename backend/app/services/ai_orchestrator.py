@@ -250,7 +250,7 @@ async def _detect_tool_with_claude(query: str, conversation_history: list[dict] 
         model=settings.ai_fallback_model,
         max_tokens=300,
         temperature=0,
-        system=ANTHROPIC_SYSTEM_PROMPT,
+        system=INTENT_ROUTER_PROMPT,
         messages=_build_messages(query=query, conversation_history=conversation_history),
     )
     text = "".join(block.text for block in response.content if hasattr(block, "text"))
