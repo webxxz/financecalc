@@ -19,6 +19,47 @@ export type GoalPayload = {
   notes?: string | null;
 };
 
+export type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type DecisionResponse = {
+  status: "complete" | "needs_more_info";
+  verdict: string | null;
+  verdict_label: string | null;
+  reasoning: string | null;
+  comparison: Array<{
+    option: string;
+    key_metric: string;
+    pros: string[];
+    cons: string[];
+  }>;
+  insights: string[];
+  recommendation_strength: "strong" | "moderate" | "depends" | null;
+  follow_up_question: string | null;
+  calculations_run: string[];
+};
+
+export type ScenarioResponse = {
+  scenario: string;
+  verdict: string;
+  verdict_label: string;
+  insights: string[];
+  data: Record<string, unknown>;
+};
+
+export type DecisionPayload = {
+  message: string;
+  conversation_history?: Message[] | null;
+  context?: Record<string, unknown> | null;
+};
+
+export type ScenarioPayload = {
+  scenario: string;
+  inputs: Record<string, unknown>;
+};
+
 type RequestOptions = RequestInit & {
   cacheMode?: RequestCache;
 };
@@ -69,6 +110,20 @@ export async function askAssistant(query: string) {
   return request<CalculatorResponse>("/api/ai/assistant", {
     method: "POST",
     body: JSON.stringify({ query }),
+  });
+}
+
+export async function runDecision(payload: DecisionPayload) {
+  return request<DecisionResponse>("/api/ai/decision", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function runScenario(payload: ScenarioPayload) {
+  return request<ScenarioResponse>("/api/ai/scenario", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 
