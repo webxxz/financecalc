@@ -36,8 +36,16 @@ export default function Home() {
           { href: "/calculators/sip", title: "SIP Calculator", desc: "Investment growth projection." },
           { href: "/calculators/mortgage", title: "Mortgage Calculator", desc: "Monthly housing cost estimator." },
           { href: "/calculators/credit-card-payoff", title: "Credit Card Payoff", desc: "Debt-free timeline and interest cost." },
-          { href: "/calculators/investment-growth", title: "Investment Growth", desc: "Compounding + contribution modeling." },
+          { href: "/calculators/investment-growth", title: "Investment Growth", desc: "Compounding and contribution modeling." },
           { href: "/calculators/retirement-withdrawal", title: "Retirement Withdrawal", desc: "4% rule readiness and funding gap." },
+          { href: "/calculators/fd", title: "FD Calculator", desc: "Fixed deposit maturity and interest." },
+          { href: "/calculators/rd", title: "RD Calculator", desc: "Recurring deposit growth estimator." },
+          { href: "/calculators/ppf", title: "PPF Calculator", desc: "15-year PPF corpus with 80C savings." },
+          { href: "/calculators/tax", title: "Income Tax Calculator", desc: "FY2025-26 old vs new regime." },
+          { href: "/calculators/car-loan", title: "Car Loan EMI Calculator", desc: "Car loan cost breakdown." },
+          { href: "/calculators/home-loan-eligibility", title: "Home Loan Eligibility", desc: "Max loan based on income and FOIR." },
+          { href: "/calculators/loan-interest-rate", title: "Interest Rate Finder", desc: "Reverse-calculate your loan rate." },
+          { href: "/calculators/loan-tenure", title: "Loan Tenure Calculator", desc: "Find repayment period from EMI." },
         ].map((card) => (
           <Link
             key={card.href}

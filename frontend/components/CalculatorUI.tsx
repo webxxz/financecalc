@@ -109,21 +109,43 @@ const MONEY_FIELDS = new Set([
   "total_tax",
 ]);
 
-function formatFieldValue(key: string, value: unknown, currency: (typeof SUPPORTED_CURRENCIES)[number]): string {
+function formatINRCurrency(value: number): string {
+  const isNegative = value < 0;
+  const abs = Math.abs(value);
+  const [intPart, decPart] = abs.toFixed(2).split(".");
+  const lastThree = intPart.slice(-3);
+  const remaining = intPart.slice(0, -3);
+  const formatted =
+    remaining.length > 0
+      ? remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + lastThree
+      : lastThree;
+  return (isNegative ? "-" : "") + "₹" + formatted + "." + decPart;
+}
+
+function formatFieldValue(
+  key: string,
+  value: unknown,
+  currency: (typeof SUPPORTED_CURRENCIES)[number]
+): string {
   if (typeof value !== "number") return String(value);
   const normalizedKey = key.toLowerCase();
   const isMoneyLike = MONEY_FIELDS.has(normalizedKey);
+
   if (isMoneyLike) {
-    const formatted = new Intl.NumberFormat(CURRENCY_LOCALE[currency], {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }).format(value);
-    if (currency === "INR" && value >= 10000000) {
-      return `${formatted} (${(value / 10000000).toFixed(2)} Cr)`;
-    }
-    if (currency === "INR" && value >= 100000) {
-      return `${formatted} (${(value / 100000).toFixed(2)} L)`;
+    let formatted: string;
+    if (currency === "INR") {
+      formatted = formatINRCurrency(value);
+      if (value >= 10000000) {
+        formatted += " (" + (value / 10000000).toFixed(2) + " Cr)";
+      } else if (value >= 100000) {
+        formatted += " (" + (value / 100000).toFixed(2) + " L)";
+      }
+    } else {
+      formatted = new Intl.NumberFormat(CURRENCY_LOCALE[currency], {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 2,
+      }).format(value);
     }
     return formatted;
   }
@@ -200,6 +222,25 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
       setAssistantLoading(false);
     }
   };
+
+  const growthData =
+    result && Array.isArray(result.result["yearly_growth"])
+      ? (result.result["yearly_growth"] as Array<{
+          year: number;
+          invested: number;
+          value: number;
+        }>)
+      : null;
+
+  const scheduleData =
+    result && Array.isArray(result.result["yearly_schedule"])
+      ? (result.result["yearly_schedule"] as Array<{
+          year: number;
+          principal_paid: number;
+          interest_paid: number;
+          balance: number;
+        }>)
+      : null;
 
   return (
     <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -336,25 +377,15 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
             </ChartCard>
           ) : null}
 
-          {Array.isArray(result.result["yearly_growth"]) && result.result["yearly_growth"].length > 0 ? (
+          {growthData && growthData.length > 0 ? (
             <ChartCard title="Yearly Growth">
-              <GrowthLineChart data={result.result["yearly_growth"] as Array<{ year: number; invested: number; value: number }>} currency={currency} />
+              <GrowthLineChart data={growthData} currency={currency} />
             </ChartCard>
           ) : null}
 
-          {Array.isArray(result.result["yearly_schedule"]) && result.result["yearly_schedule"].length > 0 ? (
-            <ChartCard title="Yearly EMI Amortisation">
-              <YearlyBreakdownTable
-                rows={
-                  result.result["yearly_schedule"] as Array<{
-                    year: number;
-                    principal_paid: number;
-                    interest_paid: number;
-                    balance: number;
-                  }>
-                }
-                currency={currency}
-              />
+          {scheduleData && scheduleData.length > 0 ? (
+            <ChartCard title="Yearly Amortisation Schedule">
+              <YearlyBreakdownTable rows={scheduleData} currency={currency} />
             </ChartCard>
           ) : null}
 
