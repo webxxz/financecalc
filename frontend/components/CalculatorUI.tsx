@@ -109,7 +109,7 @@ const MONEY_FIELDS = new Set([
   "total_tax",
 ]);
 
-function formatIndianNumber(value: number): string {
+function formatINRCurrency(value: number): string {
   const isNegative = value < 0;
   const abs = Math.abs(value);
   const [intPart, decPart] = abs.toFixed(2).split(".");
@@ -134,7 +134,7 @@ function formatFieldValue(
   if (isMoneyLike) {
     let formatted: string;
     if (currency === "INR") {
-      formatted = formatIndianNumber(value);
+      formatted = formatINRCurrency(value);
       if (value >= 10000000) {
         formatted += " (" + (value / 10000000).toFixed(2) + " Cr)";
       } else if (value >= 100000) {

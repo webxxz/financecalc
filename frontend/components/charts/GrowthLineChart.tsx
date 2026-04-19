@@ -19,6 +19,13 @@ function formatYAxisTick(value: number, currency: string): string {
   return value.toString();
 }
 
+function getCurrencyLocale(currency: string): string {
+  if (currency === "INR") return "en-IN";
+  if (currency === "EUR") return "de-DE";
+  if (currency === "GBP") return "en-GB";
+  return "en-US";
+}
+
 export default function GrowthLineChart({ data, currency }: GrowthLineChartProps) {
   return (
     <ResponsiveContainer width="100%" height={240}>
@@ -28,10 +35,11 @@ export default function GrowthLineChart({ data, currency }: GrowthLineChartProps
         <YAxis tickFormatter={(value: number) => formatYAxisTick(value, currency)} />
         <Tooltip
           formatter={(value: number) =>
-            new Intl.NumberFormat(
-              currency === "INR" ? "en-IN" : currency === "EUR" ? "de-DE" : currency === "GBP" ? "en-GB" : "en-US",
-              { style: "currency", currency, maximumFractionDigits: 0 }
-            ).format(value)
+            new Intl.NumberFormat(getCurrencyLocale(currency), {
+              style: "currency",
+              currency,
+              maximumFractionDigits: 0,
+            }).format(value)
           }
         />
         <Legend />
