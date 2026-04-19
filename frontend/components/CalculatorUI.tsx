@@ -1,11 +1,17 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { askAssistant, postCalculator, saveCalculation, type CalculatorResponse } from "@/lib/api";
 import { useCurrency } from "@/lib/currency-context";
 import { auth } from "@/lib/firebase-client";
+import ChartCard from "@/components/ChartCard";
+
+const EmiBreakdownChart = dynamic(() => import("@/components/charts/EmiBreakdownChart"), { ssr: false });
+const GrowthLineChart = dynamic(() => import("@/components/charts/GrowthLineChart"), { ssr: false });
+const YearlyBreakdownTable = dynamic(() => import("@/components/charts/YearlyBreakdownTable"), { ssr: false });
 
 type FieldConfig = {
   name: string;
@@ -13,7 +19,9 @@ type FieldConfig = {
   type?: "number" | "text";
   placeholder?: string;
   min?: number;
+  max?: number;
   step?: number;
+  showSlider?: boolean;
 };
 
 type CalculatorUIProps = {
@@ -106,11 +114,18 @@ function formatFieldValue(key: string, value: unknown, currency: (typeof SUPPORT
   const normalizedKey = key.toLowerCase();
   const isMoneyLike = MONEY_FIELDS.has(normalizedKey);
   if (isMoneyLike) {
-    return new Intl.NumberFormat(CURRENCY_LOCALE[currency], {
+    const formatted = new Intl.NumberFormat(CURRENCY_LOCALE[currency], {
       style: "currency",
       currency,
       maximumFractionDigits: 2,
     }).format(value);
+    if (currency === "INR" && value >= 10000000) {
+      return `${formatted} (${(value / 10000000).toFixed(2)} Cr)`;
+    }
+    if (currency === "INR" && value >= 100000) {
+      return `${formatted} (${(value / 100000).toFixed(2)} L)`;
+    }
+    return formatted;
   }
   return new Intl.NumberFormat(CURRENCY_LOCALE[currency], { maximumFractionDigits: 2 }).format(value);
 }
@@ -211,11 +226,15 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
 
       <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
         {fields.map((field) => (
-          <label key={field.name} className="text-sm">
-            <span className="mb-1 block font-medium">{field.label}</span>
+          <div key={field.name} className="text-sm">
+            <label htmlFor={`${field.name}-input`} className="mb-1 block font-medium">
+              {field.label}
+            </label>
             <input
+              id={`${field.name}-input`}
               type={field.type || "number"}
               min={field.min}
+              max={field.max}
               step={field.step ?? "any"}
               placeholder={field.placeholder}
               value={values[field.name] ?? ""}
@@ -223,7 +242,30 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
               required
               className="w-full rounded-md border border-zinc-300 px-3 py-2 outline-none ring-offset-2 focus:ring-2 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-950"
             />
-          </label>
+            {field.showSlider && field.type !== "text" ? (
+              <div className="mt-2">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-xs text-zinc-600 dark:text-zinc-300">
+                    {field.label}
+                  </span>
+                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800">
+                    {values[field.name] ?? ""}
+                  </span>
+                </div>
+                <input
+                  id={`${field.name}-slider`}
+                  type="range"
+                  min={field.min}
+                  max={field.max}
+                  step={field.step ?? "any"}
+                  value={values[field.name] ?? field.min ?? 0}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [field.name]: e.target.value }))}
+                  aria-label={`${field.label} value`}
+                  className="mt-1 w-full accent-indigo-600"
+                />
+              </div>
+            ) : null}
+          </div>
         ))}
 
         <div className="md:col-span-2">
@@ -273,6 +315,48 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
               ))}
             </ul>
           </div>
+
+          {typeof result.result["monthly_emi"] === "number" && typeof result.result["total_interest"] === "number" ? (
+            <ChartCard title="EMI Payment Breakdown">
+              <EmiBreakdownChart
+                principal={(result.result["total_payment"] as number) - (result.result["total_interest"] as number)}
+                totalInterest={result.result["total_interest"] as number}
+                currency={currency}
+              />
+            </ChartCard>
+          ) : null}
+
+          {endpoint === "/api/car-loan" && typeof result.result["monthly_emi"] === "number" && typeof result.result["total_interest_paid"] === "number" ? (
+            <ChartCard title="Car Loan Payment Breakdown">
+              <EmiBreakdownChart
+                principal={result.result["loan_amount"] as number}
+                totalInterest={result.result["total_interest_paid"] as number}
+                currency={currency}
+              />
+            </ChartCard>
+          ) : null}
+
+          {Array.isArray(result.result["yearly_growth"]) && result.result["yearly_growth"].length > 0 ? (
+            <ChartCard title="Yearly Growth">
+              <GrowthLineChart data={result.result["yearly_growth"] as Array<{ year: number; invested: number; value: number }>} currency={currency} />
+            </ChartCard>
+          ) : null}
+
+          {Array.isArray(result.result["yearly_schedule"]) && result.result["yearly_schedule"].length > 0 ? (
+            <ChartCard title="Yearly EMI Amortisation">
+              <YearlyBreakdownTable
+                rows={
+                  result.result["yearly_schedule"] as Array<{
+                    year: number;
+                    principal_paid: number;
+                    interest_paid: number;
+                    balance: number;
+                  }>
+                }
+                currency={currency}
+              />
+            </ChartCard>
+          ) : null}
 
           <div id="ai-assistant" className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
             <div className="flex flex-wrap items-center justify-between gap-3">

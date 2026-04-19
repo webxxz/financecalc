@@ -7,7 +7,7 @@ from app.schemas.common import StandardResponse
 def calculate_sip(data: SIPRequest) -> StandardResponse:
     p = data.monthly_investment
     i = data.annual_return_rate / 12 / 100
-    n = data.years * 12
+    n = data.tenure_years * 12
 
     if i == 0:
         future_value = p * n
@@ -16,12 +16,29 @@ def calculate_sip(data: SIPRequest) -> StandardResponse:
 
     total_invested = p * n
     estimated_returns = future_value - total_invested
+    yearly_growth: list[dict[str, float | int]] = []
+
+    for year in range(1, data.tenure_years + 1):
+        months = year * 12
+        if i == 0:
+            value = p * months
+        else:
+            value = p * (((pow(1 + i, months) - 1) / i) * (1 + i))
+        invested = p * months
+        yearly_growth.append(
+            {
+                "year": year,
+                "invested": round(invested, 2),
+                "value": round(value, 2),
+            }
+        )
 
     return StandardResponse(
         result={
             "future_value": round(future_value, 2),
             "total_invested": round(total_invested, 2),
             "estimated_returns": round(estimated_returns, 2),
+            "yearly_growth": yearly_growth,
         },
         summary="Your SIP projection is based on monthly contribution, expected return rate, and duration.",
         insights=[

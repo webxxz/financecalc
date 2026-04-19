@@ -57,21 +57,21 @@ async def sip_endpoint(request: Request, payload: SIPRequest) -> StandardRespons
     return calculate_sip(payload)
 
 
-@router.post("/fd", response_model=StandardResponse)
+@router.post("/api/fd", response_model=StandardResponse)
 @limiter.limit(calculator_rate_limit)
 async def fd_endpoint(request: Request, payload: FDRequest) -> StandardResponse:
     # request is required for slowapi's limiter key function.
     return calculate_fd(payload)
 
 
-@router.post("/rd", response_model=StandardResponse)
+@router.post("/api/rd", response_model=StandardResponse)
 @limiter.limit(calculator_rate_limit)
 async def rd_endpoint(request: Request, payload: RDRequest) -> StandardResponse:
     # request is required for slowapi's limiter key function.
     return calculate_rd(payload)
 
 
-@router.post("/ppf", response_model=StandardResponse)
+@router.post("/api/ppf", response_model=StandardResponse)
 @limiter.limit(calculator_rate_limit)
 async def ppf_endpoint(request: Request, payload: PPFRequest) -> StandardResponse:
     # request is required for slowapi's limiter key function.
@@ -85,35 +85,35 @@ async def mortgage_endpoint(request: Request, payload: MortgageRequest) -> Stand
     return calculate_mortgage(payload)
 
 
-@router.post("/tax", response_model=StandardResponse)
+@router.post("/api/tax", response_model=StandardResponse)
 @limiter.limit(calculator_rate_limit)
 async def tax_endpoint(request: Request, payload: TaxRequest) -> StandardResponse:
     # request is required for slowapi's limiter key function.
     return calculate_tax(payload)
 
 
-@router.post("/car-loan", response_model=StandardResponse)
+@router.post("/api/car-loan", response_model=StandardResponse)
 @limiter.limit(calculator_rate_limit)
 async def car_loan_endpoint(request: Request, payload: CarLoanRequest) -> StandardResponse:
     # request is required for slowapi's limiter key function.
     return calculate_car_loan(payload)
 
 
-@router.post("/home-loan-eligibility", response_model=StandardResponse)
+@router.post("/api/home-loan-eligibility", response_model=StandardResponse)
 @limiter.limit(calculator_rate_limit)
 async def home_loan_eligibility_endpoint(request: Request, payload: HomeLoanEligibilityRequest) -> StandardResponse:
     # request is required for slowapi's limiter key function.
     return calculate_home_loan_eligibility(payload)
 
 
-@router.post("/loan-interest-rate", response_model=StandardResponse)
+@router.post("/api/loan-interest-rate", response_model=StandardResponse)
 @limiter.limit(calculator_rate_limit)
 async def loan_interest_rate_endpoint(request: Request, payload: LoanInterestRateRequest) -> StandardResponse:
     # request is required for slowapi's limiter key function.
     return calculate_loan_interest_rate(payload)
 
 
-@router.post("/loan-tenure", response_model=StandardResponse)
+@router.post("/api/loan-tenure", response_model=StandardResponse)
 @limiter.limit(calculator_rate_limit)
 async def loan_tenure_endpoint(request: Request, payload: LoanTenureRequest) -> StandardResponse:
     # request is required for slowapi's limiter key function.

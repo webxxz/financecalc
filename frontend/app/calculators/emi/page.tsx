@@ -43,9 +43,9 @@ export default function EMIPage() {
         description="Calculate monthly EMI, total payment, and total interest with validated backend formulas."
         endpoint="/api/emi"
         fields={[
-          { name: "principal", label: "Principal", min: 1 },
-          { name: "annual_interest_rate", label: "Annual Interest Rate (%)", min: 0, step: 0.01 },
-          { name: "tenure_months", label: "Tenure (Months)", min: 1, step: 1 },
+          { name: "principal", label: "Principal", min: 1, max: 10000000, showSlider: true },
+          { name: "annual_interest_rate", label: "Annual Interest Rate (%)", min: 0, max: 24, step: 0.01, showSlider: true },
+          { name: "tenure_months", label: "Tenure (Months)", min: 1, max: 360, step: 1, showSlider: true },
         ]}
       />
 

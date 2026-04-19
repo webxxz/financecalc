@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
+from pydantic import AliasChoices, BaseModel, Field, PositiveFloat, PositiveInt
 
 
 class EMIRequest(BaseModel):
@@ -10,7 +10,7 @@ class EMIRequest(BaseModel):
 class SIPRequest(BaseModel):
     monthly_investment: PositiveFloat
     annual_return_rate: float = Field(ge=0, le=100)
-    years: PositiveInt
+    tenure_years: PositiveInt = Field(validation_alias=AliasChoices("tenure_years", "years"))
 
 
 class FDRequest(BaseModel):

@@ -73,8 +73,13 @@ def calculate_tax(data: TaxRequest) -> StandardResponse:
         cess = new_cess
         total_tax = new_total_tax
 
+    rebate_applies = (regime == "old" and taxable_income <= 500000) or (regime == "new" and taxable_income <= 700000)
+    if rebate_applies:
+        tax_before_cess = 0.0
+        cess = 0.0
+        total_tax = 0.0
     net_income_after_tax = gross_income - total_tax
-    effective_tax_rate = (total_tax / gross_income * 100) if gross_income > 0 else 0.0
+    effective_tax_rate = 0.0 if rebate_applies else ((total_tax / gross_income * 100) if gross_income > 0 else 0.0)
     monthly_take_home = net_income_after_tax / 12 if gross_income > 0 else 0.0
 
     if old_total_tax < new_total_tax:
@@ -119,3 +124,14 @@ def calculate_tax(data: TaxRequest) -> StandardResponse:
             "In old regime, standard deduction ₹50,000 and your declared deductions are considered; in new regime, only ₹75,000 standard deduction is considered.",
         ],
     )
+
+
+# Test: income=700000, regime=new, deductions=0
+#   taxable = 700000 - 75000 = 625000 → tax = 25000*5% = 12500
+#   rebate applies (625000 ≤ 700000) → total_tax = 0
+# Test: income=700001, regime=new, deductions=0
+#   taxable = 700001 - 75000 = 625001 → rebate does NOT apply
+#   tax = 25001 * 5% = 1250.05 → cess = 50.002 → total = 1300.05
+# Test: income=500000, regime=old, deductions=0
+#   taxable = 500000 - 50000 = 450000 → tax = 200000*5% = 10000
+#   rebate applies (450000 ≤ 500000) → total_tax = 0
