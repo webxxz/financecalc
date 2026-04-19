@@ -60,7 +60,7 @@ async def run_decision(
     Returns structured decision output with verdict, reasoning,
     comparisons and follow-up question.
     """
-    anthropic_api_key = getattr(settings, "anthropic_api_key", "") or settings.claude_api_key
+    anthropic_api_key = getattr(settings, "anthropic_api_key", "") or getattr(settings, "claude_api_key", "")
     client = AsyncAnthropic(api_key=anthropic_api_key)
 
     messages = []

@@ -98,7 +98,7 @@ async def run_rent_vs_buy(inputs: dict) -> dict:
         ),
         "buy": {
             "monthly_cost": round(monthly_mortgage, 2),
-            "total_cost_over_period": round(total_mortgage_cost + down_payment, 2),
+            "total_cost_over_period": round(total_mortgage_cost, 2),
             "property_value_at_end": round(future_property_value, 2),
             "net_position": round(buy_net_position, 2),
         },

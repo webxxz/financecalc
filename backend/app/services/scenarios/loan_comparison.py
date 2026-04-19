@@ -22,7 +22,10 @@ async def run_loan_comparison(inputs: dict) -> dict:
 
     def compute_loan(rate: float, tenure: int, fees: float) -> dict:
         r = rate / 100 / 12
-        emi = principal * r * (1 + r) ** tenure / ((1 + r) ** tenure - 1)
+        if r == 0:
+            emi = principal / tenure
+        else:
+            emi = principal * r * (1 + r) ** tenure / ((1 + r) ** tenure - 1)
         total_payment = emi * tenure + fees
         total_interest = total_payment - principal - fees
         effective_rate = ((total_payment / principal) ** (12 / tenure) - 1) * 100
