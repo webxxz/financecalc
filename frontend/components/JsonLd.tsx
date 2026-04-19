@@ -3,7 +3,10 @@ type JsonLdProps = {
 };
 
 export default function JsonLd({ data }: JsonLdProps) {
-  const safeJson = JSON.stringify(data).replace(/<\//g, "<\\/");
+  const safeJson = JSON.stringify(data)
+    .replace(/<\//g, "<\\/")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 
   return (
     <script
