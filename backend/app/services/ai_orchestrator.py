@@ -278,6 +278,8 @@ async def detect_tools(query: str, conversation_history: list[dict] | None = Non
 
 async def _dispatch_tool(tool_name: str, arguments: dict) -> dict:
     """Map tool name to service function and execute it."""
+    import asyncio
+
     from app.schemas.calculators import (
         CarLoanRequest,
         CreditCardPayoffRequest,
@@ -333,7 +335,7 @@ async def _dispatch_tool(tool_name: str, arguments: dict) -> dict:
 
     func, schema_class = dispatch_map[tool_name]
     request_obj = schema_class(**arguments)
-    response = func(request_obj)
+    response = await asyncio.to_thread(func, request_obj)
     if hasattr(response, "model_dump"):
         response = response.model_dump()
     if isinstance(response, dict) and "result" in response:
@@ -373,6 +375,7 @@ def _build_combined_insights(tool_runs: List[Dict[str, Any]]) -> List[str]:
 
     combo_insights = {
         frozenset({"calculate_mortgage", "calculate_emi"}): "Cross-check mortgage all-in cost against base EMI to validate overall house affordability.",
+        frozenset({"calculate_tax", "calculate_retirement"}): "Use post-tax income assumptions when setting retirement contribution plans.",
         frozenset({"calculate_tax", "calculate_investment_growth"}): "Factor post-tax income into investment growth planning to avoid overestimating contributions.",
         frozenset({"calculate_investment_growth", "calculate_retirement_withdrawal"}): "Use projected portfolio growth with withdrawal readiness to stress-test retirement sustainability.",
     }
