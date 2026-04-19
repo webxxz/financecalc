@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Question = {
   id: number;
@@ -69,8 +69,17 @@ const QUESTIONS: Question[] = [
 
 export default function FinancialHealthCheck() {
   const router = useRouter();
+  const [isVisible, setIsVisible] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const completed = window.localStorage.getItem(FHC_COMPLETED_KEY) === "true";
+      setIsVisible(!completed);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   const activeQuestion = QUESTIONS[currentQuestion];
   const progress = ((currentQuestion + 1) / QUESTIONS.length) * 100;
@@ -90,11 +99,11 @@ export default function FinancialHealthCheck() {
 
   const onGetRecommendation = () => {
     window.localStorage.setItem(FHC_COMPLETED_KEY, "true");
+    setIsVisible(false);
     router.push(firstAnswerRoute);
   };
 
-  if (typeof window === "undefined") return null;
-  if (window.localStorage.getItem(FHC_COMPLETED_KEY) === "true") return null;
+  if (!isVisible) return null;
 
   return (
     <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
