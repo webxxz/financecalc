@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 
 import AppProviders from "@/components/AppProviders";
+import NavUsageIndicator from "@/components/NavUsageIndicator";
 
 import "./globals.css";
 
@@ -27,6 +29,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const hasValidGaId = typeof gaMeasurementId === "string" && /^G-[A-Z0-9]+$/.test(gaMeasurementId);
+
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100">
@@ -43,6 +48,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <Link href="/calculators/credit-card-payoff">Card Payoff</Link>
                 <Link href="/calculators/investment-growth">Investment Growth</Link>
                 <Link href="/calculators/retirement-withdrawal">Retirement Withdrawal</Link>
+                <Link
+                  href="/pro"
+                  className="font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                >
+                  ✦ Go Pro
+                </Link>
+                <NavUsageIndicator />
+                <Link href="/decide">Ask AI</Link>
                 <Link href="/learn/what-is-emi">Learn</Link>
                 <Link href="/dashboard">Dashboard</Link>
                 <Link href="/contact">Contact</Link>
@@ -51,6 +64,24 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </header>
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
         </AppProviders>
+        {hasValidGaId ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaMeasurementId}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        ) : null}
       </body>
     </html>
   );
