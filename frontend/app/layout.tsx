@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+import Script from "next/script";
 
 import AppProviders from "@/components/AppProviders";
 
 import "./globals.css";
+
+const NavUsageIndicator = dynamic(() => import("@/components/NavUsageIndicator"), { ssr: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://financecalc.app"),
@@ -43,6 +47,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <Link href="/calculators/credit-card-payoff">Card Payoff</Link>
                 <Link href="/calculators/investment-growth">Investment Growth</Link>
                 <Link href="/calculators/retirement-withdrawal">Retirement Withdrawal</Link>
+                <Link
+                  href="/pro"
+                  className="font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                >
+                  ✦ Go Pro
+                </Link>
+                <NavUsageIndicator />
+                <Link href="/decide">Ask AI</Link>
                 <Link href="/learn/what-is-emi">Learn</Link>
                 <Link href="/dashboard">Dashboard</Link>
                 <Link href="/contact">Contact</Link>
@@ -51,6 +63,24 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </header>
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
         </AppProviders>
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        ) : null}
       </body>
     </html>
   );

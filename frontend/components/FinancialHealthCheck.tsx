@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import { trackEvent } from "@/lib/analytics";
+
 type Question = {
   id: number;
   prompt: string;
@@ -100,6 +102,7 @@ export default function FinancialHealthCheck() {
   const onGetRecommendation = () => {
     window.localStorage.setItem(FHC_COMPLETED_KEY, "true");
     setIsVisible(false);
+    trackEvent("quiz_completed");
     router.push(firstAnswerRoute);
   };
 

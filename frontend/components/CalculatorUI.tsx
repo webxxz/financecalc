@@ -5,13 +5,16 @@ import { FormEvent, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { askAssistant, postCalculator, saveCalculation, type CalculatorResponse } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 import { useCurrency } from "@/lib/currency-context";
 import { auth } from "@/lib/firebase-client";
+import { useUsage } from "@/lib/usage-context";
 import ChartCard from "@/components/ChartCard";
 
 const EmiBreakdownChart = dynamic(() => import("@/components/charts/EmiBreakdownChart"), { ssr: false });
 const GrowthLineChart = dynamic(() => import("@/components/charts/GrowthLineChart"), { ssr: false });
 const YearlyBreakdownTable = dynamic(() => import("@/components/charts/YearlyBreakdownTable"), { ssr: false });
+const ExportPDFButton = dynamic(() => import("@/components/ExportPDFButton"), { ssr: false });
 
 type FieldConfig = {
   name: string;
@@ -160,6 +163,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
   const [assistant, setAssistant] = useState<CalculatorResponse | null>(null);
   const [assistantLoading, setAssistantLoading] = useState(false);
   const { currency, setCurrency } = useCurrency();
+  const { consumeAiQuery } = useUsage();
 
   const payload = useMemo(() => {
     const converted: Record<string, number | string> = {};
@@ -181,6 +185,10 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
     try {
       const data = await postCalculator(endpoint, payload);
       setResult(data);
+      trackEvent("calculator_used", {
+        calculator_type: title,
+        currency,
+      });
 
       if (auth?.currentUser) {
         const token = await auth.currentUser.getIdToken();
@@ -204,6 +212,11 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
 
   const onAskAssistant = async () => {
     if (!result) return;
+    if (!consumeAiQuery()) {
+      setError("AI free limit reached. Upgrade to Pro for unlimited AI usage.");
+      toast.error("AI free limit reached. Upgrade to Pro.");
+      return;
+    }
     setAssistantLoading(true);
     setAssistant(null);
     setError("");
@@ -332,7 +345,15 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
       {result ? (
         <div className="mt-6 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold">Summary</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold">Summary</h2>
+              <ExportPDFButton
+                title={title}
+                inputs={payload as Record<string, unknown>}
+                result={result}
+                currency={currency}
+              />
+            </div>
             <p className="text-sm text-zinc-700 dark:text-zinc-300">{result.summary}</p>
           </div>
 
