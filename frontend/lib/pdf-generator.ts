@@ -6,6 +6,13 @@ export async function generateCalculatorPDF(
   result: CalculatorResponse,
   currency: string,
 ): Promise<void> {
+  const localeByCurrency: Record<string, string> = {
+    INR: "en-IN",
+    USD: "en-US",
+    EUR: "de-DE",
+    GBP: "en-GB",
+  };
+  const locale = localeByCurrency[currency] ?? "en-US";
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -28,7 +35,7 @@ export async function generateCalculatorPDF(
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text("AI-Powered Financial Decisions", MARGIN, 19);
-  doc.text(`Generated: ${new Date().toLocaleDateString("en-IN")}`, PAGE_W - MARGIN, 19, {
+  doc.text(`Generated: ${new Date().toLocaleDateString(locale)}`, PAGE_W - MARGIN, 19, {
     align: "right",
   });
 
@@ -126,7 +133,7 @@ export async function generateCalculatorPDF(
     doc.setTextColor(...TEXT);
     const displayVal =
       typeof value === "number"
-        ? new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", {
+        ? new Intl.NumberFormat(locale, {
             style: "currency",
             currency,
             maximumFractionDigits: 0,
@@ -182,6 +189,11 @@ export async function generateCalculatorPDF(
     );
   }
 
-  const filename = `${title.toLowerCase().replace(/\s+/g, "-")}-report.pdf`;
+  const safeFilenameBase = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+  const filename = `${safeFilenameBase || "calculator"}-report.pdf`;
   doc.save(filename);
 }

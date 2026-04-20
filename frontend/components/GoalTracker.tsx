@@ -16,42 +16,50 @@ const GOAL_TEMPLATES = [
     title: "Buy a home",
     icon: "🏠",
     calculatorHref: "/decide",
+    calculatorLabel: "Ask AI Decision Assistant",
     placeholder_amount: 5000000,
   },
   {
     title: "Build retirement corpus",
     icon: "🎯",
     calculatorHref: "/decide",
+    calculatorLabel: "Ask AI Retirement Planner",
     placeholder_amount: 10000000,
   },
   {
     title: "Pay off loan",
     icon: "💳",
     calculatorHref: "/calculators/emi",
+    calculatorLabel: "Try EMI Calculator",
     placeholder_amount: 500000,
   },
   {
     title: "Children's education",
     icon: "🎓",
     calculatorHref: "/calculators/sip",
+    calculatorLabel: "Try SIP Calculator",
     placeholder_amount: 2000000,
   },
   {
     title: "Emergency fund",
     icon: "🛡️",
     calculatorHref: "/calculators/fd",
+    calculatorLabel: "Try FD Calculator",
     placeholder_amount: 300000,
   },
   {
     title: "Buy a car",
     icon: "🚗",
     calculatorHref: "/calculators/car-loan",
+    calculatorLabel: "Try Car Loan Calculator",
     placeholder_amount: 800000,
   },
 ] as const;
 
+const DISPLAY_LOCALE = "en-IN";
+
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(DISPLAY_LOCALE, {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
@@ -59,7 +67,16 @@ function formatCurrency(value: number): string {
 }
 
 function daysUntil(dateString: string): number {
-  return Math.ceil((new Date(dateString).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const timestamp = new Date(dateString).getTime();
+  if (Number.isNaN(timestamp)) return 0;
+  const remaining = Math.ceil((timestamp - Date.now()) / (1000 * 60 * 60 * 24));
+  return Math.max(0, remaining);
+}
+
+function formatTargetDate(dateString: string): string | null {
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString(DISPLAY_LOCALE);
 }
 
 export default function GoalTracker() {
@@ -182,6 +199,8 @@ export default function GoalTracker() {
         {goals.map((goal) => {
           const percentage = Math.min(100, (goal.current_amount / goal.target_amount) * 100);
           const progressColor = percentage >= 100 ? "bg-green-600" : percentage >= 50 ? "bg-indigo-600" : "bg-amber-500";
+          const targetDateLabel =
+            typeof goal.target_date === "string" && goal.target_date.trim() ? formatTargetDate(goal.target_date) : null;
 
           if (editingGoalId === goal.id) {
             return (
@@ -221,9 +240,7 @@ export default function GoalTracker() {
                   <p className="mt-0.5 text-sm text-zinc-500">
                     {formatCurrency(goal.current_amount)} of {formatCurrency(goal.target_amount)}
                   </p>
-                  {goal.target_date ? (
-                    <p className="mt-0.5 text-xs text-zinc-400">Target: {new Date(goal.target_date).toLocaleDateString("en-IN")}</p>
-                  ) : null}
+                  {targetDateLabel ? <p className="mt-0.5 text-xs text-zinc-400">Target: {targetDateLabel}</p> : null}
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => startInlineUpdate(goal)} className="text-xs text-indigo-600 hover:underline" type="button">
@@ -240,7 +257,9 @@ export default function GoalTracker() {
               </div>
               <p className="mt-1 text-xs text-zinc-400">
                 {percentage.toFixed(0)}% complete
-                {goal.target_date ? ` · ${daysUntil(goal.target_date)} days left` : ""}
+                {typeof goal.target_date === "string" && goal.target_date.trim()
+                  ? ` · ${daysUntil(goal.target_date)} days left`
+                  : ""}
               </p>
             </div>
           );
@@ -253,25 +272,26 @@ export default function GoalTracker() {
         <p className="text-sm font-semibold">Goal templates</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {GOAL_TEMPLATES.map((template) => (
-            <button
-              key={template.title}
-              type="button"
-              onClick={() =>
-                setNewGoal((prev) => ({
-                  ...prev,
-                  title: template.title,
-                  target_amount: template.placeholder_amount,
-                  current_amount: prev.current_amount ?? 0,
-                }))
-              }
-              className="rounded-md border border-zinc-300 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-            >
-              <span>{template.icon}</span>
-              <span className="ml-2 font-medium">{template.title}</span>
+            <div key={template.title} className="rounded-md border border-zinc-300 px-3 py-2 dark:border-zinc-700">
+              <button
+                type="button"
+                onClick={() =>
+                  setNewGoal((prev) => ({
+                    ...prev,
+                    title: template.title,
+                    target_amount: template.placeholder_amount,
+                    current_amount: prev.current_amount ?? 0,
+                  }))
+                }
+                className="w-full text-left text-sm hover:text-indigo-700 dark:hover:text-indigo-300"
+              >
+                <span>{template.icon}</span>
+                <span className="ml-2 font-medium">{template.title}</span>
+              </button>
               <Link href={template.calculatorHref} className="mt-1 block text-xs text-indigo-600 hover:underline">
-                Suggested: {template.calculatorHref}
+                Suggested: {template.calculatorLabel}
               </Link>
-            </button>
+            </div>
           ))}
         </div>
 

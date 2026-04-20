@@ -29,6 +29,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const hasValidGaId = typeof gaMeasurementId === "string" && /^G-[A-Z0-9]+$/.test(gaMeasurementId);
+
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100">
@@ -61,10 +64,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </header>
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
         </AppProviders>
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+        {hasValidGaId ? (
           <>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
               strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">
@@ -72,7 +75,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                gtag('config', '${gaMeasurementId}', {
                   page_path: window.location.pathname,
                 });
               `}

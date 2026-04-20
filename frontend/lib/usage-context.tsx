@@ -14,7 +14,7 @@ type UsageContextValue = UsageState & {
   setProUser: (isPro: boolean) => void;
 };
 
-const FREE_USAGE_DEFAULTS = {
+const FREE_TIER_LIMITS = {
   aiQueriesRemaining: 5,
   scenariosRemaining: 3,
 };
@@ -26,7 +26,7 @@ const UsageContext = createContext<UsageContextValue | undefined>(undefined);
 function getDefaultUsage(): UsageState {
   return {
     isProUser: false,
-    ...FREE_USAGE_DEFAULTS,
+    ...FREE_TIER_LIMITS,
   };
 }
 
@@ -41,11 +41,11 @@ function readStoredUsage(): UsageState {
       aiQueriesRemaining:
         typeof parsed.aiQueriesRemaining === "number"
           ? Math.max(0, Math.floor(parsed.aiQueriesRemaining))
-          : FREE_USAGE_DEFAULTS.aiQueriesRemaining,
+          : FREE_TIER_LIMITS.aiQueriesRemaining,
       scenariosRemaining:
         typeof parsed.scenariosRemaining === "number"
           ? Math.max(0, Math.floor(parsed.scenariosRemaining))
-          : FREE_USAGE_DEFAULTS.scenariosRemaining,
+          : FREE_TIER_LIMITS.scenariosRemaining,
     };
   } catch {
     return getDefaultUsage();

@@ -213,8 +213,9 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
   const onAskAssistant = async () => {
     if (!result) return;
     if (!consumeAiQuery()) {
-      setError("AI free limit reached. Upgrade to Pro for unlimited AI usage.");
-      toast.error("AI free limit reached. Upgrade to Pro.");
+      const message = "AI free limit reached. Upgrade to Pro for unlimited AI usage.";
+      setError(message);
+      toast.error(message);
       return;
     }
     setAssistantLoading(true);
