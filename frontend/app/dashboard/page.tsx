@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import DashboardClient from "@/components/DashboardClient";
-
-const GoalTracker = dynamic(() => import("@/components/GoalTracker"), { ssr: false });
+import GoalTracker from "@/components/GoalTracker";
 
 export const metadata: Metadata = {
   title: "Dashboard",

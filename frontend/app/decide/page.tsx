@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
-
-const ChatInterface = dynamic(() => import("@/components/ChatInterface"), { ssr: false });
-const ScenarioCard = dynamic(() => import("@/components/ScenarioCard"), { ssr: false });
+import ChatInterface from "@/components/ChatInterface";
+import ScenarioCard from "@/components/ScenarioCard";
 
 export const metadata: Metadata = {
   title: "Ask AI",

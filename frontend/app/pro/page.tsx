@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
-
-const ProPageTracker = dynamic(() => import("@/components/ProPageTracker"), { ssr: false });
+import ProPageTracker from "@/components/ProPageTracker";
 
 export const metadata: Metadata = {
   title: "Go Pro",
