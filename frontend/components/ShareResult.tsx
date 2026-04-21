@@ -29,7 +29,7 @@ export default function ShareResult({ title, summary, url }: Props) {
 
   const handleWhatsApp = () => {
     trackEvent("share_clicked", { share_method: "whatsapp" });
-    const waUrl = "https://wa.me/?text=" + encodeURIComponent(shareText);
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -42,7 +42,7 @@ export default function ShareResult({ title, summary, url }: Props) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    link.download = `${safeTitle || "financecalc"}-result.txt`;
+    link.download = `${safeTitle || "calculation-result"}-result.txt`;
     link.click();
     URL.revokeObjectURL(link.href);
   };
