@@ -58,6 +58,24 @@ export default function Home() {
         ))}
       </div>
 
+      <section className="rounded-2xl border border-indigo-200 bg-indigo-50 p-6 dark:border-indigo-900 dark:bg-indigo-950/40">
+        <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+          FinanceCalc Pro
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold">Unlock unlimited AI and premium planning tools</h2>
+        <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
+          Get unlimited AI decision queries, advanced scenario workflows, PDF exports, and priority support.
+        </p>
+        <div className="mt-4">
+          <Link
+            href="/pro"
+            className="inline-flex rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            Explore Pro
+          </Link>
+        </div>
+      </section>
+
       <div className="rounded-2xl border border-zinc-200 bg-white p-5 text-sm dark:border-zinc-800 dark:bg-zinc-900">
         <p className="font-semibold">Learn before you decide</p>
         <p className="mt-1 text-zinc-600 dark:text-zinc-300">

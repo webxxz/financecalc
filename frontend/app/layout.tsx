@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Script from "next/script";
 
 import AppProviders from "@/components/AppProviders";
-import NavUsageIndicator from "@/components/NavUsageIndicator";
 
 import "./globals.css";
+
+const NavUsageIndicator = dynamic(() => import("@/components/NavUsageIndicator"), { ssr: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://financecalc.app"),
