@@ -23,14 +23,7 @@ export default function ShareResult({ title, summary, url }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      const el = document.createElement("textarea");
-      el.value = shareUrl;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      window.prompt("Copy this link manually:", shareUrl);
     }
   };
 
@@ -45,7 +38,11 @@ export default function ShareResult({ title, summary, url }: Props) {
     const blob = new Blob([shareText], { type: "text/plain" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "financecalc-result.txt";
+    const safeTitle = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    link.download = `${safeTitle || "financecalc"}-result.txt`;
     link.click();
     URL.revokeObjectURL(link.href);
   };
