@@ -1,15 +1,9 @@
 "use client";
 
-import type { Metadata } from "next";
 import Link from "next/link";
 import ChatInterface from "@/components/ChatInterface";
 import ScenarioCard from "@/components/ScenarioCard";
 import { useUsage } from "@/lib/usage-context";
-
-export const metadata: Metadata = {
-  title: "Ask AI",
-  description: "Run AI decision analysis and financial scenarios.",
-};
 
 export default function DecidePage() {
   const { aiQueriesRemaining, isProUser } = useUsage();

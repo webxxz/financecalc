@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import Script from "next/script";
 
 import AppProviders from "@/components/AppProviders";
+import NavUsageIndicatorClient from "@/components/NavUsageIndicatorClient";
 
 import "./globals.css";
-
-const NavUsageIndicator = dynamic(() => import("@/components/NavUsageIndicator"), { ssr: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://financecalc.app"),
@@ -56,7 +54,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 >
                   ✦ Go Pro
                 </Link>
-                <NavUsageIndicator />
+                <NavUsageIndicatorClient />
                 <Link href="/decide">Ask AI</Link>
                 <Link href="/learn/what-is-emi">Learn</Link>
                 <Link href="/dashboard">Dashboard</Link>
