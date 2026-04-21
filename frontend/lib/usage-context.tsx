@@ -23,6 +23,11 @@ const STORAGE_KEY = "fc_usage";
 const PRO_KEY = "fc_pro";
 const TODAY = () => new Date().toISOString().split("T")[0];
 
+
+function sanitizeCount(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
 function readUsage(): UsageData {
   if (typeof window === "undefined") {
     return { aiQueries: 0, scenarioRuns: 0, date: TODAY() };
@@ -38,8 +43,8 @@ function readUsage(): UsageData {
     }
 
     return {
-      aiQueries: Number.isFinite(parsed.aiQueries) ? Math.max(0, parsed.aiQueries) : 0,
-      scenarioRuns: Number.isFinite(parsed.scenarioRuns) ? Math.max(0, parsed.scenarioRuns) : 0,
+      aiQueries: sanitizeCount(parsed.aiQueries),
+      scenarioRuns: sanitizeCount(parsed.scenarioRuns),
       date: typeof parsed.date === "string" ? parsed.date : TODAY(),
     };
   } catch {

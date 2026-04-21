@@ -54,7 +54,7 @@ export default function ChatInterface() {
           className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
         />
 
-        {!isProUser && aiQueriesRemaining !== Infinity ? (
+        {!isProUser ? (
           <p className="mt-1 text-center text-xs text-zinc-400">
             {aiQueriesRemaining} free AI {aiQueriesRemaining === 1 ? "query" : "queries"} remaining today
           </p>
@@ -70,7 +70,7 @@ export default function ChatInterface() {
       </form>
 
       {error === "__limit_reached__" ? (
-        <div className="mt-3 max-w-[90%] w-full">
+        <div className="mt-3 max-w-[90%]">
           <UpgradePrompt reason="ai_limit" />
         </div>
       ) : error ? (

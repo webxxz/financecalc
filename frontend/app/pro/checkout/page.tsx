@@ -63,8 +63,12 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      <Link href="/" className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
-        ← Back to calculators
+      <Link
+        href="/"
+        aria-label="Back to calculators"
+        className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+      >
+        Back to calculators
       </Link>
     </div>
   );
