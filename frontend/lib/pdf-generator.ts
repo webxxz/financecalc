@@ -12,6 +12,12 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 
 // Exclude heavy yearly arrays/tables that are better represented in charts on the web UI.
 const EXCLUDED_KEYS = new Set(["yearly_schedule", "yearly_growth", "yearly_comparison"]);
+const LOCALE_BY_CURRENCY: Record<string, string> = {
+  INR: "en-IN",
+  USD: "en-US",
+  EUR: "de-DE",
+  GBP: "en-GB",
+};
 
 function formatValue(value: number, currency: string): string {
   try {
@@ -57,7 +63,7 @@ export async function generateCalculatorPDF(
   result: CalculatorResponse,
   currency: string,
 ): Promise<void> {
-  const locale = currency === "INR" ? "en-IN" : "en-US";
+  const locale = LOCALE_BY_CURRENCY[currency] ?? "en-US";
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   let y = 40;
