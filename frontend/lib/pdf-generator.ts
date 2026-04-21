@@ -10,6 +10,7 @@ const PAGE_W = 210;
 const MARGIN = 20;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
+// Exclude heavy yearly arrays/tables that are better represented in charts on the web UI.
 const EXCLUDED_KEYS = new Set(["yearly_schedule", "yearly_growth", "yearly_comparison"]);
 
 function formatValue(value: number, currency: string): string {
@@ -38,6 +39,10 @@ function formatPlainValue(value: unknown): string {
   } catch {
     return String(value);
   }
+}
+
+function formatDisplayValue(value: unknown, currency: string): string {
+  return typeof value === "number" ? formatValue(value, currency) : formatPlainValue(value);
 }
 
 function ensureSpace(doc: import("jspdf").jsPDF, y: number, needed: number): number {
@@ -111,7 +116,7 @@ export async function generateCalculatorPDF(
 
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...TEXT);
-      const display = typeof value === "number" ? formatValue(value, currency) : formatPlainValue(value);
+      const display = formatDisplayValue(value, currency);
       doc.text(display, PAGE_W - MARGIN - 3, y + 2, { align: "right" });
       y += 8;
     });
@@ -142,7 +147,7 @@ export async function generateCalculatorPDF(
 
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...TEXT);
-    const display = typeof value === "number" ? formatValue(value, currency) : formatPlainValue(value);
+    const display = formatDisplayValue(value, currency);
     doc.text(display, PAGE_W - MARGIN - 3, y + 2, { align: "right" });
     y += 8;
   });
