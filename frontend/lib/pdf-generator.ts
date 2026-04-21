@@ -21,7 +21,7 @@ const LOCALE_BY_CURRENCY: Record<string, string> = {
 
 function formatValue(value: number, currency: string): string {
   try {
-    return new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", {
+    return new Intl.NumberFormat(LOCALE_BY_CURRENCY[currency] ?? "en-US", {
       style: "currency",
       currency,
       maximumFractionDigits: 0,
