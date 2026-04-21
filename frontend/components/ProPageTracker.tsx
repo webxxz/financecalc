@@ -2,11 +2,15 @@
 
 import { useEffect } from "react";
 
-import { trackEvent } from "@/lib/analytics";
-
 export default function ProPageTracker() {
   useEffect(() => {
-    trackEvent("pro_page_viewed");
+    if (typeof window !== "undefined" && "gtag" in window) {
+      try {
+        (window as typeof window & { gtag: (...args: unknown[]) => void }).gtag("event", "pro_page_viewed");
+      } catch {
+        // silent
+      }
+    }
   }, []);
 
   return null;

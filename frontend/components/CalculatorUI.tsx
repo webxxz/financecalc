@@ -163,7 +163,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
   const [assistant, setAssistant] = useState<CalculatorResponse | null>(null);
   const [assistantLoading, setAssistantLoading] = useState(false);
   const { currency, setCurrency } = useCurrency();
-  const { consumeAiQuery } = useUsage();
+  const { consumeAIQuery } = useUsage();
 
   const payload = useMemo(() => {
     const converted: Record<string, number | string> = {};
@@ -212,7 +212,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
 
   const onAskAssistant = async () => {
     if (!result) return;
-    if (!consumeAiQuery()) {
+    if (!consumeAIQuery()) {
       const message = "AI free limit reached. Upgrade to Pro for unlimited AI usage.";
       setError(message);
       toast.error(message);
