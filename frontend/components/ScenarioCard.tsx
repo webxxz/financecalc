@@ -1,17 +1,20 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { FormEvent, useState } from "react";
 
 import { runScenario, type ScenarioResponse } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
 import { useUsage } from "@/lib/usage-context";
 
+const UpgradePrompt = dynamic(() => import("@/components/UpgradePrompt"), { ssr: false });
+
 type Props = {
   scenario: string;
 };
 
 export default function ScenarioCard({ scenario }: Props) {
-  const { consumeScenario } = useUsage();
+  const { consumeScenarioRun } = useUsage();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScenarioResponse | null>(null);
   const [error, setError] = useState("");
@@ -19,13 +22,16 @@ export default function ScenarioCard({ scenario }: Props) {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (!consumeScenario()) {
-      setError("Scenario free limit reached. Upgrade to Pro for unlimited scenario runs.");
+    setLoading(true);
+    setError("");
+
+    const allowed = consumeScenarioRun();
+    if (!allowed) {
+      setError("__limit_reached__");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError("");
     try {
       const data = await runScenario({ scenario, inputs: {} });
       setResult(data);
@@ -51,7 +57,15 @@ export default function ScenarioCard({ scenario }: Props) {
           {loading ? "Running..." : "Run Scenario"}
         </button>
       </form>
-      {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+
+      {error === "__limit_reached__" ? (
+        <div className="mt-3">
+          <UpgradePrompt reason="scenario_limit" />
+        </div>
+      ) : error ? (
+        <p className="mt-3 text-sm text-red-600">{error}</p>
+      ) : null}
+
       {result ? <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">{result.verdict_label}</p> : null}
     </section>
   );

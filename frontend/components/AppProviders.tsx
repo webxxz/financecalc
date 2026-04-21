@@ -8,13 +8,13 @@ import { UsageProvider } from "@/lib/usage-context";
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <AppErrorBoundary>
-      <UsageProvider>
+    <UsageProvider>
+      <AppErrorBoundary>
         <CurrencyProvider>
           {children}
           <Toaster position="top-right" richColors closeButton />
         </CurrencyProvider>
-      </UsageProvider>
-    </AppErrorBoundary>
+      </AppErrorBoundary>
+    </UsageProvider>
   );
 }

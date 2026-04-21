@@ -1,14 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useState } from "react";
 
 import type { CalculatorResponse } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
 import { generateCalculatorPDF } from "@/lib/pdf-generator";
 import { useUsage } from "@/lib/usage-context";
-
-const UpgradePrompt = dynamic(() => import("@/components/UpgradePrompt"), { ssr: false });
 
 type Props = {
   title: string;
@@ -27,6 +25,7 @@ export default function ExportPDFButton({ title, inputs, result, currency }: Pro
       setShowUpgrade(true);
       return;
     }
+
     setLoading(true);
     try {
       await generateCalculatorPDF(title, inputs, result, currency);
@@ -55,8 +54,8 @@ export default function ExportPDFButton({ title, inputs, result, currency }: Pro
       </button>
 
       {showUpgrade ? (
-        <div className="mt-3">
-          <UpgradePrompt reason="pdf_export" compact />
+        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-950/20 dark:text-amber-300">
+          PDF export is available on Pro. <Link href="/pro" className="font-semibold underline">Upgrade now</Link>.
         </div>
       ) : null}
     </div>

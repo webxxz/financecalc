@@ -6,7 +6,8 @@ type EventName =
   | "pdf_exported"
   | "goal_created"
   | "pro_page_viewed"
-  | "quiz_completed";
+  | "quiz_completed"
+  | "share_clicked";
 
 type EventParams = {
   calculator_type?: string;
@@ -14,6 +15,7 @@ type EventParams = {
   result_value?: number;
   offer_id?: string;
   currency?: string;
+  share_method?: string;
 };
 
 type GtagFn = (command: "event", eventName: string, params?: Record<string, unknown>) => void;

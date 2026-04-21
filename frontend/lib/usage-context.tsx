@@ -1,103 +1,151 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
-type UsageState = {
-  isProUser: boolean;
+export type UsageData = {
+  aiQueries: number;
+  scenarioRuns: number;
+  date: string;
+};
+
+type UsageContextType = {
   aiQueriesRemaining: number;
-  scenariosRemaining: number;
+  scenarioRunsRemaining: number;
+  isProUser: boolean;
+  consumeAIQuery: () => boolean;
+  consumeScenarioRun: () => boolean;
+  setProUser: (value: boolean) => void;
 };
 
-type UsageContextValue = UsageState & {
-  consumeAiQuery: () => boolean;
-  consumeScenario: () => boolean;
-  setProUser: (isPro: boolean) => void;
-};
+const AI_LIMIT = 5;
+const SCENARIO_LIMIT = 10;
+const STORAGE_KEY = "fc_usage";
+const PRO_KEY = "fc_pro";
+const TODAY = () => new Date().toISOString().split("T")[0];
 
-const FREE_TIER_LIMITS = {
-  aiQueriesRemaining: 5,
-  scenariosRemaining: 3,
-};
 
-const STORAGE_KEY = "fc_usage_v1";
-
-const UsageContext = createContext<UsageContextValue | undefined>(undefined);
-
-function getDefaultUsage(): UsageState {
-  return {
-    isProUser: false,
-    ...FREE_TIER_LIMITS,
-  };
+function sanitizeCount(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? Math.max(0, value) : 0;
 }
 
-function readStoredUsage(): UsageState {
-  if (typeof window === "undefined") return getDefaultUsage();
+function readUsage(): UsageData {
+  if (typeof window === "undefined") {
+    return { aiQueries: 0, scenarioRuns: 0, date: TODAY() };
+  }
+
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return getDefaultUsage();
-    const parsed = JSON.parse(raw) as Partial<UsageState>;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { aiQueries: 0, scenarioRuns: 0, date: TODAY() };
+
+    const parsed = JSON.parse(raw) as UsageData;
+    if (parsed.date !== TODAY()) {
+      return { aiQueries: 0, scenarioRuns: 0, date: TODAY() };
+    }
+
     return {
-      isProUser: Boolean(parsed.isProUser),
-      aiQueriesRemaining:
-        typeof parsed.aiQueriesRemaining === "number"
-          ? Math.max(0, Math.floor(parsed.aiQueriesRemaining))
-          : FREE_TIER_LIMITS.aiQueriesRemaining,
-      scenariosRemaining:
-        typeof parsed.scenariosRemaining === "number"
-          ? Math.max(0, Math.floor(parsed.scenariosRemaining))
-          : FREE_TIER_LIMITS.scenariosRemaining,
+      aiQueries: sanitizeCount(parsed.aiQueries),
+      scenarioRuns: sanitizeCount(parsed.scenarioRuns),
+      date: typeof parsed.date === "string" ? parsed.date : TODAY(),
     };
   } catch {
-    return getDefaultUsage();
+    return { aiQueries: 0, scenarioRuns: 0, date: TODAY() };
   }
 }
 
-export function UsageProvider({ children }: { children: React.ReactNode }) {
-  const [usage, setUsage] = useState<UsageState>(() => readStoredUsage());
+function writeUsage(data: UsageData): void {
+  if (typeof window === "undefined") return;
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(usage));
-  }, [usage]);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // silent
+  }
+}
 
-  const value = useMemo<UsageContextValue>(
-    () => ({
-      ...usage,
-      consumeAiQuery: () => {
-        if (usage.isProUser) return true;
-        if (usage.aiQueriesRemaining <= 0) return false;
-        setUsage((prev) => ({
-          ...prev,
-          aiQueriesRemaining: Math.max(0, prev.aiQueriesRemaining - 1),
-        }));
-        return true;
-      },
-      consumeScenario: () => {
-        if (usage.isProUser) return true;
-        if (usage.scenariosRemaining <= 0) return false;
-        setUsage((prev) => ({
-          ...prev,
-          scenariosRemaining: Math.max(0, prev.scenariosRemaining - 1),
-        }));
-        return true;
-      },
-      setProUser: (isPro: boolean) => {
-        setUsage((prev) => ({
-          ...prev,
-          isProUser: isPro,
-        }));
-      },
-    }),
-    [usage],
+function readProStatus(): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    return localStorage.getItem(PRO_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+const UsageContext = createContext<UsageContextType>({
+  aiQueriesRemaining: AI_LIMIT,
+  scenarioRunsRemaining: SCENARIO_LIMIT,
+  isProUser: false,
+  consumeAIQuery: () => true,
+  consumeScenarioRun: () => true,
+  setProUser: () => {},
+});
+
+export function UsageProvider({ children }: { children: ReactNode }) {
+  const [usage, setUsage] = useState<UsageData>(() => readUsage());
+  const [isProUser, setIsProUserState] = useState<boolean>(() => readProStatus());
+
+  const aiQueriesRemaining = isProUser ? Infinity : Math.max(0, AI_LIMIT - usage.aiQueries);
+  const scenarioRunsRemaining = isProUser ? Infinity : Math.max(0, SCENARIO_LIMIT - usage.scenarioRuns);
+
+  const consumeAIQuery = useCallback((): boolean => {
+    if (isProUser) return true;
+
+    const current = readUsage();
+    if (current.aiQueries >= AI_LIMIT) return false;
+
+    const updated: UsageData = {
+      ...current,
+      aiQueries: current.aiQueries + 1,
+    };
+
+    writeUsage(updated);
+    setUsage(updated);
+    return true;
+  }, [isProUser]);
+
+  const consumeScenarioRun = useCallback((): boolean => {
+    if (isProUser) return true;
+
+    const current = readUsage();
+    if (current.scenarioRuns >= SCENARIO_LIMIT) return false;
+
+    const updated: UsageData = {
+      ...current,
+      scenarioRuns: current.scenarioRuns + 1,
+    };
+
+    writeUsage(updated);
+    setUsage(updated);
+    return true;
+  }, [isProUser]);
+
+  const setProUser = useCallback((value: boolean) => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(PRO_KEY, value ? "true" : "false");
+      } catch {
+        // silent
+      }
+    }
+
+    setIsProUserState(value);
+  }, []);
+
+  return (
+    <UsageContext.Provider
+      value={{
+        aiQueriesRemaining,
+        scenarioRunsRemaining,
+        isProUser,
+        consumeAIQuery,
+        consumeScenarioRun,
+        setProUser,
+      }}
+    >
+      {children}
+    </UsageContext.Provider>
   );
-
-  return <UsageContext.Provider value={value}>{children}</UsageContext.Provider>;
 }
 
-export function useUsage(): UsageContextValue {
-  const context = useContext(UsageContext);
-  if (!context) {
-    throw new Error("useUsage must be used within a UsageProvider");
-  }
-  return context;
-}
+export const useUsage = () => useContext(UsageContext);
