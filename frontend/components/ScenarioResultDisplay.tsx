@@ -5,6 +5,7 @@ import { type ScenarioResponse } from "@/lib/api";
 import ChartCard from "@/components/ChartCard";
 
 const GrowthLineChart = dynamic(() => import("@/components/charts/GrowthLineChart"), { ssr: false });
+const ShareResult = dynamic(() => import("@/components/ShareResult"), { ssr: false });
 
 type Props = {
   result: ScenarioResponse;
@@ -252,6 +253,8 @@ export default function ScenarioResultDisplay({ result, currency, onAskAI }: Pro
           </ul>
         </ChartCard>
       ) : null}
+
+      <ShareResult title={`${result.scenario.replace(/_/g, " ")} Analysis`} summary={result.verdict_label} />
 
       {onAskAI ? (
         <button

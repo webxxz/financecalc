@@ -15,6 +15,7 @@ const EmiBreakdownChart = dynamic(() => import("@/components/charts/EmiBreakdown
 const GrowthLineChart = dynamic(() => import("@/components/charts/GrowthLineChart"), { ssr: false });
 const YearlyBreakdownTable = dynamic(() => import("@/components/charts/YearlyBreakdownTable"), { ssr: false });
 const ExportPDFButton = dynamic(() => import("@/components/ExportPDFButton"), { ssr: false });
+const ShareResult = dynamic(() => import("@/components/ShareResult"), { ssr: false });
 
 type FieldConfig = {
   name: string;
@@ -378,6 +379,8 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
               ))}
             </ul>
           </div>
+
+          <ShareResult title={`${title} Result`} summary={result.summary} />
 
           {typeof result.result["monthly_emi"] === "number" && typeof result.result["total_interest"] === "number" ? (
             <ChartCard title="EMI Payment Breakdown">
