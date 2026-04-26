@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import CalculatorUI from "@/components/CalculatorUI";
-
-const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
 
 export const metadata: Metadata = {
   title: "EMI Calculator",
@@ -54,7 +51,6 @@ export default function EMIPage() {
           <p key={paragraph}>{paragraph}</p>
         ))}
       </article>
-      <AffiliateSection />
     </div>
   );
 }

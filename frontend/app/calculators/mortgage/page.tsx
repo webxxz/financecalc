@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import CalculatorUI from "@/components/CalculatorUI";
-
-const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
 
 export const metadata: Metadata = {
   title: "Mortgage Calculator",
@@ -28,7 +25,6 @@ export default function MortgagePage() {
           { name: "annual_home_insurance", label: "Annual Home Insurance", min: 0 },
         ]}
       />
-      <AffiliateSection />
     </div>
   );
 }

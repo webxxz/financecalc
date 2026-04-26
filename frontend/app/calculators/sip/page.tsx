@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import CalculatorUI from "@/components/CalculatorUI";
-
-const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
 
 export const metadata: Metadata = {
   title: "SIP Calculator",
@@ -25,7 +22,6 @@ export default function SIPPage() {
           { name: "tenure_years", label: "Investment Tenure (Years)", min: 1, max: 40, step: 1, showSlider: true },
         ]}
       />
-      <AffiliateSection title="Mutual Fund Partners" description="Affiliate placeholder: compare SIP-friendly investment platforms and fees." />
     </div>
   );
 }

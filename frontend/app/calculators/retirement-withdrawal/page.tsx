@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import CalculatorUI from "@/components/CalculatorUI";
 import FAQSchema from "@/components/FAQSchema";
-
-const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
 
 export const metadata: Metadata = {
   title: "Retirement Withdrawal Calculator (4% Rule)",
@@ -68,10 +65,6 @@ export default function RetirementWithdrawalPage() {
         </p>
       </article>
 
-      <AffiliateSection
-        title="Retirement Income Products"
-        description="Affiliate placeholder: compare retirement income and annuity options by payout, fees, and flexibility."
-      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
 import { createGoal, deleteGoal, getUserDashboard, updateGoal, type GoalPayload } from "@/lib/api";
 import { auth } from "@/lib/firebase-client";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 type Goal = GoalPayload & { id: string };
 
@@ -185,8 +186,13 @@ export default function GoalTracker() {
 
   if (!user) {
     return (
-      <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
-        <p className="text-sm text-zinc-600 dark:text-zinc-300">Sign in to track your financial goals and progress.</p>
+      <div className="space-y-4 rounded-2xl border border-zinc-700 p-8 text-center">
+        <div className="text-4xl">🔐</div>
+        <h3 className="text-lg font-semibold">Sign in to track your goals</h3>
+        <p className="text-sm text-zinc-400">
+          Save financial goals, track progress, and view your calculation history.
+        </p>
+        <GoogleSignInButton />
       </div>
     );
   }

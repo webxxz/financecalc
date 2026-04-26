@@ -32,106 +32,98 @@ const ARTICLES: Record<string, LearnArticle> = {
   [howMuchToSaveForRetirement.slug]: howMuchToSaveForRetirement,
 };
 
-function renderInlineMarkdown(text: string): React.ReactNode {
-  return text.split(/(\*\*.*?\*\*)/g).map((part, idx) =>
-    part.startsWith("**") && part.endsWith("**") ? (
-      <strong key={`${part}-${idx}`}>{part.slice(2, -2)}</strong>
+function parseBold(text: string): React.ReactNode {
+  const parts = text.split(/\*\*(.*?)\*\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <strong key={`bold-${i}`} className="font-semibold text-zinc-900 dark:text-white">
+        {part}
+      </strong>
     ) : (
-      <span key={`${part}-${idx}`}>{part}</span>
+      part
     ),
   );
 }
 
-function renderParagraph(block: string, key: string) {
-  const lines = block.split("\n");
-  return (
-    <p key={key}>
-      {lines.map((line, idx) => (
-        <span key={`${key}-line-${idx}`}>
-          {renderInlineMarkdown(line)}
-          {idx < lines.length - 1 ? <br /> : null}
-        </span>
-      ))}
-    </p>
-  );
-}
-
-function renderContent(content: string) {
-  const blocks = content
+function renderContent(content: string): React.ReactNode[] {
+  return content
     .split("\n\n")
-    .map((block) => block.trim())
-    .filter(Boolean);
+    .flatMap((block, i) => {
+    const trimmedBlock = block.trim();
+    if (!trimmedBlock) return [];
+    const blockKey = `${trimmedBlock.slice(0, 40)}-${i}`;
 
-  return blocks.map((block, index) => {
-    const key = `block-${index}`;
-
-    if (block.startsWith("## ")) {
-      return <h2 key={key}>{block.slice(3)}</h2>;
+    if (trimmedBlock.startsWith("## ")) {
+      return [<h2 key={`h2-${blockKey}`}>{trimmedBlock.replace("## ", "")}</h2>];
     }
 
-    if (block.startsWith("|")) {
-      const lines = block.split("\n").filter(Boolean);
-      if (lines.length >= 2) {
-        const [headerLine, , ...rowLines] = lines;
-        const headers = headerLine.split("|").map((cell) => cell.trim()).filter(Boolean);
-        const rows = rowLines.map((row) => row.split("|").map((cell) => cell.trim()).filter(Boolean));
-        return (
-          <div key={key} className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr>
-                  {headers.map((header) => (
-                    <th key={`${key}-${header}`} className="border border-zinc-300 px-3 py-2 text-left dark:border-zinc-700">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, rowIdx) => (
-                  <tr key={`${key}-row-${rowIdx}`}>
-                    {row.map((cell, cellIdx) => (
-                      <td
-                        key={`${key}-row-${rowIdx}-cell-${cellIdx}`}
-                        className="border border-zinc-300 px-3 py-2 dark:border-zinc-700"
-                      >
-                        {renderInlineMarkdown(cell)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        );
-      }
-    }
+    const blockLines = trimmedBlock
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const isBulletList = blockLines.length > 0 && blockLines.every((line) => /^-\s+/.test(line));
 
-    const lines = block.split("\n");
-    const isOrderedList = lines.every((line) => /^\d+\.\s+/.test(line));
-    if (isOrderedList) {
-      return (
-        <ol key={key}>
-          {lines.map((line) => (
-            <li key={`${key}-${line}`}>{renderInlineMarkdown(line.replace(/^\d+\.\s+/, ""))}</li>
-          ))}
-        </ol>
-      );
-    }
-
-    const isUnorderedList = lines.every((line) => /^-\s+/.test(line));
-    if (isUnorderedList) {
-      return (
-        <ul key={key}>
-          {lines.map((line) => (
-            <li key={`${key}-${line}`}>{renderInlineMarkdown(line.replace(/^-\s+/, ""))}</li>
+    if (isBulletList) {
+      const items = blockLines;
+      return [
+        <ul key={`ul-${blockKey}`}>
+          {items.map((item, j) => (
+            <li key={`li-${blockKey}-${j}`}>{parseBold(item.replace(/^-\s+/, ""))}</li>
           ))}
         </ul>
-      );
+      ];
     }
 
-    return renderParagraph(block, key);
-  });
+    if (trimmedBlock.startsWith("|")) {
+      const rows = trimmedBlock
+        .split("\n")
+        .filter((row) => row.startsWith("|") && !row.match(/^\|[\-\s|]+\|$/));
+
+      if (rows.length === 0) return [];
+
+      const headers = rows[0].split("|").filter(Boolean).map((header) => header.trim());
+      const dataRows = rows.slice(1).map((row) => row.split("|").filter(Boolean).map((cell) => cell.trim()));
+
+      return [
+        <div key={`table-${blockKey}`} className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr>
+                {headers.map((header, headerIndex) => (
+                  <th
+                    key={`th-${blockKey}-${headerIndex}`}
+                    className="border border-zinc-300 px-3 py-2 text-left dark:border-zinc-700"
+                  >
+                    {parseBold(header)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {dataRows.map((row, rowIndex) => (
+                <tr key={`tr-${blockKey}-${rowIndex}`}>
+                  {row.map((cell, cellIndex) => (
+                    <td
+                      key={`td-${blockKey}-${rowIndex}-${cellIndex}`}
+                      className="border border-zinc-300 px-3 py-2 dark:border-zinc-700"
+                    >
+                      {parseBold(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ];
+    }
+
+    return [
+      <p key={`p-${blockKey}`} className="leading-relaxed text-zinc-700 dark:text-zinc-300">
+        {parseBold(trimmedBlock)}
+      </p>
+    ];
+    });
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

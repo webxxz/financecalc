@@ -1,7 +1,4 @@
 import Link from "next/link";
-import dynamic from "next/dynamic";
-
-const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
 
 export const revalidate = 3600;
 
@@ -9,24 +6,43 @@ export default function Home() {
   return (
     <section className="space-y-8">
       <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">Trusted by global planners</p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight">Financial decisions with confidence, not guesswork.</h1>
-        <p className="mt-3 max-w-3xl text-zinc-600 dark:text-zinc-300">
-          Production-grade calculators and AI guidance, powered by one validated math engine for consistent results every time.
+        <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+          AI-Powered Financial Decisions
+        </p>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight">What should you do with your money?</h1>
+        <p className="mt-3 max-w-2xl text-zinc-600 dark:text-zinc-400">
+          Don&apos;t just calculate numbers — get a decision. Our AI runs the right calculations, compares your options,
+          and tells you exactly what to do and why.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href="/calculators/emi"
-            className="rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            href="/decide"
+            className="rounded-md bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
-            Start Calculating
+            Ask AI ✦
           </Link>
           <Link
-            href="/calculators/emi#ai-assistant"
-            className="rounded-md border border-zinc-300 px-5 py-3 text-sm font-semibold hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+            href="/decide"
+            className="rounded-md border border-zinc-300 px-6 py-3 text-sm font-semibold transition hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
           >
-            Ask AI Assistant
+            Browse Scenarios
           </Link>
+        </div>
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {[
+            "Buy or rent a home?",
+            "Pay debt or invest?",
+            "When can I retire?",
+            "Which loan is cheaper?",
+          ].map((question) => (
+            <Link
+              key={question}
+              href="/decide"
+              className="rounded-xl border border-zinc-300 bg-zinc-50 p-3 text-sm text-zinc-700 transition hover:border-indigo-500 hover:text-indigo-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:text-indigo-300"
+            >
+              {question} →
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -85,11 +101,6 @@ export default function Home() {
           </Link>
         </p>
       </div>
-
-      <AffiliateSection
-        title="Loan Partner Marketplace"
-        description="Ad/affiliate placeholder: compare mortgages and personal loans from financing partners in one place."
-      />
     </section>
   );
 }
