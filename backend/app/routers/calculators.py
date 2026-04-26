@@ -2,15 +2,20 @@ from fastapi import APIRouter, Request
 
 from app.core.config import get_settings
 from app.schemas.calculators import (
+    BudgetRequest,
     CarLoanRequest,
+    CompoundInterestRequest,
     CreditCardPayoffRequest,
+    DebtPayoffRequest,
     EMIRequest,
     FDRequest,
     HomeLoanEligibilityRequest,
+    InflationRequest,
     InvestmentGrowthRequest,
     LoanInterestRateRequest,
     LoanTenureRequest,
     MortgageRequest,
+    NetWorthRequest,
     PPFRequest,
     RDRequest,
     RetirementRequest,
@@ -20,15 +25,20 @@ from app.schemas.calculators import (
 )
 from app.schemas.common import StandardResponse
 from app.services.calculators import (
+    calculate_budget,
     calculate_car_loan,
+    calculate_compound_interest,
     calculate_credit_card_payoff,
+    calculate_debt_payoff,
     calculate_emi,
     calculate_fd,
     calculate_home_loan_eligibility,
+    calculate_inflation,
     calculate_investment_growth,
     calculate_loan_interest_rate,
     calculate_loan_tenure,
     calculate_mortgage,
+    calculate_net_worth,
     calculate_ppf,
     calculate_rd,
     calculate_retirement,
@@ -148,20 +158,61 @@ async def retirement_withdrawal_endpoint(request: Request, payload: RetirementWi
     return calculate_retirement_withdrawal(payload)
 
 
+@router.post("/compound-interest", response_model=StandardResponse)
+@limiter.limit(calculator_rate_limit)
+async def compound_interest_endpoint(request: Request, payload: CompoundInterestRequest) -> StandardResponse:
+    # request is required for slowapi's limiter key function.
+    return calculate_compound_interest(payload)
+
+
+@router.post("/inflation", response_model=StandardResponse)
+@limiter.limit(calculator_rate_limit)
+async def inflation_endpoint(request: Request, payload: InflationRequest) -> StandardResponse:
+    # request is required for slowapi's limiter key function.
+    return calculate_inflation(payload)
+
+
+@router.post("/net-worth", response_model=StandardResponse)
+@limiter.limit(calculator_rate_limit)
+async def net_worth_endpoint(request: Request, payload: NetWorthRequest) -> StandardResponse:
+    # request is required for slowapi's limiter key function.
+    return calculate_net_worth(payload)
+
+
+@router.post("/budget", response_model=StandardResponse)
+@limiter.limit(calculator_rate_limit)
+async def budget_endpoint(request: Request, payload: BudgetRequest) -> StandardResponse:
+    # request is required for slowapi's limiter key function.
+    return calculate_budget(payload)
+
+
+@router.post("/debt-payoff", response_model=StandardResponse)
+@limiter.limit(calculator_rate_limit)
+async def debt_payoff_endpoint(request: Request, payload: DebtPayoffRequest) -> StandardResponse:
+    # request is required for slowapi's limiter key function.
+    return calculate_debt_payoff(payload)
+
+
 @router.get("/catalog")
 async def calculator_catalog() -> dict:
     implemented = {
+        "budget",
         "car-loan",
+        "compound-interest",
         "credit-card-payoff",
+        "currency-converter",
+        "debt-payoff",
         "emi",
         "fd",
         "home-loan-eligibility",
+        "inflation",
         "investment-growth",
         "loan-interest-rate",
         "loan-tenure",
         "sip",
         "mortgage",
         "mortgage-refinance",
+        "net-worth",
         "ppf",
         "rd",
         "tax",
@@ -175,17 +226,17 @@ async def calculator_catalog() -> dict:
 
     return {
         "categories": {
-            "Personal Finance": with_status(["budget-planner", "net-worth", "credit-card-payoff", "tax"]),
+            "Personal Finance": with_status(["budget", "net-worth", "credit-card-payoff", "debt-payoff", "tax"]),
             "Loans & Mortgages": with_status(
                 ["emi", "car-loan", "mortgage", "mortgage-refinance", "home-loan-eligibility", "loan-interest-rate", "loan-tenure"]
             ),
-            "Investments & Wealth": with_status(["sip", "fd", "rd", "ppf", "investment-growth"]),
+            "Investments & Wealth": with_status(["sip", "fd", "rd", "ppf", "investment-growth", "compound-interest"]),
             "Retirement": with_status(["retirement", "retirement-withdrawal"]),
             "Taxation": with_status(["tax"]),
             "Business & Corporate": with_status(["roi", "break-even"]),
             "Real Estate": with_status(["rental-yield", "property-affordability"]),
             "Insurance": with_status(["life-cover", "health-premium"]),
-            "Currency & Global Tools": with_status(["exchange-rate", "purchasing-power"]),
+            "Currency & Global Tools": with_status(["exchange-rate", "currency-converter", "purchasing-power"]),
             "Advanced Finance": with_status(["irr", "npv"]),
             "Utilities": with_status(["inflation", "unit-converter"]),
         }

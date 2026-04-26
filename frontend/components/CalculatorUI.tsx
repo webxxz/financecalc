@@ -32,16 +32,22 @@ type CalculatorUIProps = {
   title: string;
   description: string;
   endpoint:
+    | "/api/budget"
     | "/api/car-loan"
+    | "/api/compound-interest"
     | "/api/credit-card-payoff"
+    | "/api/currency-convert"
+    | "/api/debt-payoff"
     | "/api/emi"
     | "/api/fd"
     | "/api/home-loan-eligibility"
+    | "/api/inflation"
     | "/api/investment-growth"
     | "/api/loan-interest-rate"
     | "/api/loan-tenure"
     | "/api/mortgage"
     | "/api/mortgage-refinance"
+    | "/api/net-worth"
     | "/api/ppf"
     | "/api/rd"
     | "/api/retirement-withdrawal"
@@ -62,19 +68,29 @@ const MONEY_FIELDS = new Set([
   "annual_contribution",
   "annual_income",
   "car_price",
+  "cash_and_savings",
   "cess",
+  "current_amount",
   "annual_property_tax",
   "annual_home_insurance",
   "current_savings",
+  "credit_card_debt",
   "deductions",
+  "debt_1_balance",
+  "debt_2_balance",
+  "debt_3_balance",
   "estimated_returns",
   "estimated_tax",
   "future_value",
+  "future_equivalent",
   "gross_income",
   "funded_surplus",
   "funding_gap",
+  "home_loan_outstanding",
   "initial_investment",
+  "investments",
   "investment_gain",
+  "monthly_income",
   "monthly_contribution",
   "monthly_payment",
   "payment_needed_for_36_month_payoff",
@@ -94,11 +110,30 @@ const MONEY_FIELDS = new Set([
   "monthly_emi_at_max",
   "monthly_property_tax",
   "net_income_after_tax",
+  "net_worth",
+  "other_assets",
+  "other_liabilities",
+  "personal_loan_outstanding",
+  "property_value",
   "recommended_down_payment",
+  "recommended_needs",
+  "recommended_savings",
+  "recommended_wants",
+  "savings",
+  "snowball_total_interest",
+  "spending_gap",
   "max_eligible_loan",
   "max_property_value",
   "maturity_amount",
   "monthly_take_home",
+  "needs",
+  "needs_difference",
+  "total_assets",
+  "total_liabilities",
+  "todays_purchasing_power",
+  "total_debt",
+  "avalanche_total_interest",
+  "avalanche_saves",
   "projected_retirement_corpus",
   "property_price",
   "target_amount",
