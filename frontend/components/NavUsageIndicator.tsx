@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { useUsage } from "@/lib/usage-context";
 
 export default function NavUsageIndicator() {
   const { aiQueriesRemaining, isProUser } = useUsage();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   if (isProUser) {
     return (

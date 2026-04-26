@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { type DecisionResponse, runDecision } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
@@ -15,6 +15,11 @@ export default function ChatInterface() {
   const [result, setResult] = useState<DecisionResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const sendMessage = async (event: FormEvent) => {
     event.preventDefault();
@@ -54,9 +59,10 @@ export default function ChatInterface() {
           className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
         />
 
-        {!isProUser ? (
+        {!isProUser && mounted ? (
           <p className="mt-1 text-center text-xs text-zinc-400">
-            {aiQueriesRemaining} free AI {aiQueriesRemaining === 1 ? "query" : "queries"} remaining today
+            {aiQueriesRemaining} free AI{" "}
+            {aiQueriesRemaining === 1 ? "query" : "queries"} remaining today
           </p>
         ) : null}
 
