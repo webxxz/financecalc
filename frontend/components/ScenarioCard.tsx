@@ -152,6 +152,9 @@ export default function ScenarioCard({ scenario }: Props) {
     if (!config) return {};
     return config.fields.reduce<Record<string, unknown>>((acc, field) => {
       const value = values[field.name] ?? config.defaults[field.name] ?? "";
+      if (typeof value === "string" && value.trim() === "") {
+        return acc;
+      }
       if (field.type === "checkbox") {
         acc[field.name] = value === "true";
       } else {

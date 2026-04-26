@@ -46,23 +46,25 @@ function parseBold(text: string): React.ReactNode {
 }
 
 function renderContent(content: string): React.ReactNode[] {
-  return content.split("\n\n").map((block, i) => {
+  return content
+    .split("\n\n")
+    .flatMap((block, i) => {
     const trimmedBlock = block.trim();
-    if (!trimmedBlock) return null;
+    if (!trimmedBlock) return [];
 
     if (trimmedBlock.startsWith("## ")) {
-      return <h2 key={`h2-${i}`}>{trimmedBlock.replace("## ", "")}</h2>;
+      return [<h2 key={`h2-${i}`}>{trimmedBlock.replace("## ", "")}</h2>];
     }
 
     if (trimmedBlock.includes("\n- ") || trimmedBlock.startsWith("- ")) {
       const items = trimmedBlock.split("\n").filter((line) => line.trim().startsWith("- "));
-      return (
+      return [
         <ul key={`ul-${i}`}>
           {items.map((item, j) => (
             <li key={`li-${i}-${j}`}>{parseBold(item.trim().replace(/^- /, ""))}</li>
           ))}
         </ul>
-      );
+      ];
     }
 
     if (trimmedBlock.startsWith("|")) {
@@ -70,12 +72,12 @@ function renderContent(content: string): React.ReactNode[] {
         .split("\n")
         .filter((row) => row.startsWith("|") && !row.match(/^\|[-\s|]+\|$/));
 
-      if (rows.length === 0) return null;
+      if (rows.length === 0) return [];
 
       const headers = rows[0].split("|").filter(Boolean).map((header) => header.trim());
       const dataRows = rows.slice(1).map((row) => row.split("|").filter(Boolean).map((cell) => cell.trim()));
 
-      return (
+      return [
         <div key={`table-${i}`} className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
@@ -100,15 +102,15 @@ function renderContent(content: string): React.ReactNode[] {
             </tbody>
           </table>
         </div>
-      );
+      ];
     }
 
-    return (
+    return [
       <p key={`p-${i}`} className="leading-relaxed text-zinc-700 dark:text-zinc-300">
         {parseBold(trimmedBlock)}
       </p>
-    );
-  });
+    ];
+    });
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
