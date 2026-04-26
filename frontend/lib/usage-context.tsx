@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type UsageData = {
   aiQueries: number;
@@ -82,8 +82,25 @@ const UsageContext = createContext<UsageContextType>({
 });
 
 export function UsageProvider({ children }: { children: ReactNode }) {
-  const [usage, setUsage] = useState<UsageData>(() => readUsage());
-  const [isProUser, setIsProUserState] = useState<boolean>(() => readProStatus());
+  const [usage, setUsage] = useState<UsageData>({
+    aiQueries: 0,
+    scenarioRuns: 0,
+    date: "",
+  });
+  const [isProUser, setIsProUserState] = useState<boolean>(false);
+
+  useEffect(() => {
+    const usageFromStorage = readUsage();
+    const proStatus = readProStatus();
+    const timeoutId = window.setTimeout(() => {
+      setUsage(usageFromStorage);
+      setIsProUserState(proStatus);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   const aiQueriesRemaining = isProUser ? Infinity : Math.max(0, AI_LIMIT - usage.aiQueries);
   const scenarioRunsRemaining = isProUser ? Infinity : Math.max(0, SCENARIO_LIMIT - usage.scenarioRuns);

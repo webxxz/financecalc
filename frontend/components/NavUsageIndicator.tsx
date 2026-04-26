@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useSyncExternalStore } from "react";
 
 import { useUsage } from "@/lib/usage-context";
 
 export default function NavUsageIndicator() {
   const { aiQueriesRemaining, isProUser } = useUsage();
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
+  if (!mounted) return null;
 
   if (isProUser) {
     return (

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useSyncExternalStore } from "react";
 import ChatInterface from "@/components/ChatInterface";
 import { useUsage } from "@/lib/usage-context";
 
@@ -10,10 +11,15 @@ const SCENARIOS = ["rent_vs_buy", "debt_vs_invest", "lumpsum_vs_sip", "early_ret
 
 export default function DecidePage() {
   const { aiQueriesRemaining, isProUser } = useUsage();
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   return (
     <section className="space-y-6">
-      {!isProUser && aiQueriesRemaining <= 2 ? (
+      {!isProUser && mounted && aiQueriesRemaining <= 2 ? (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-800 dark:bg-amber-950/40">
           <p className="font-medium text-amber-900 dark:text-amber-200">
             You have {aiQueriesRemaining} free AI {aiQueriesRemaining === 1 ? "query" : "queries"} left today.
