@@ -24,7 +24,7 @@ SCENARIO_MAP = {
 }
 
 
-@router.post("/api/ai/decision", response_model=DecisionResponse)
+@router.post("/ai/decision", response_model=DecisionResponse)
 @limiter.limit("10/minute")
 async def decision_endpoint(request: Request, body: DecisionRequest) -> DecisionResponse:
     """Run AI decision engine for a user message and context."""
