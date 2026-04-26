@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { runScenario, type ScenarioResponse } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
@@ -146,7 +146,14 @@ export default function ScenarioCard({ scenario }: Props) {
   const [error, setError] = useState("");
   const { currency } = useCurrency();
   const config = SCENARIO_CONFIGS[scenario];
-  const [values, setValues] = useState<Record<string, string>>(config?.defaults ?? {});
+  const [values, setValues] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!config) return;
+    setValues(config.defaults);
+    setResult(null);
+    setError("");
+  }, [scenario, config]);
 
   const scenarioInputs = useMemo(() => {
     if (!config) return {};

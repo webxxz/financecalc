@@ -283,7 +283,9 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
       <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
         {fields.map((field) => {
           const sliderEnabled = field.showSlider && field.type !== "text";
-          const currentValue = values[field.name] ?? (sliderEnabled ? String(field.min ?? 0) : "");
+          const currentValue = values[field.name] ?? "";
+          const sliderDefaultValue = field.min !== undefined ? String(field.min) : "";
+          const sliderValue = currentValue === "" ? sliderDefaultValue : currentValue;
 
           return (
             <div key={field.name} className="text-sm">
@@ -297,7 +299,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
               max={field.max}
               step={field.step ?? "any"}
               placeholder={field.placeholder}
-              value={currentValue}
+              value={sliderEnabled ? sliderValue : currentValue}
               onChange={(e) => setValues((prev) => ({ ...prev, [field.name]: e.target.value }))}
               required
               className="w-full rounded-md border border-zinc-300 px-3 py-2 outline-none ring-offset-2 focus:ring-2 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-950"
@@ -309,7 +311,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
                     {field.label}
                   </span>
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800">
-                    {currentValue}
+                    {sliderValue}
                   </span>
                 </div>
                 <input
@@ -318,7 +320,7 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
                   min={field.min}
                   max={field.max}
                   step={field.step ?? "any"}
-                  value={currentValue}
+                  value={sliderValue}
                   onChange={(e) => setValues((prev) => ({ ...prev, [field.name]: e.target.value }))}
                   aria-label={`${field.label} value`}
                   className="mt-1 w-full accent-indigo-600"

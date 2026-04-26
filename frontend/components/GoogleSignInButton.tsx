@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FirebaseError } from "firebase/app";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 import { auth } from "@/lib/firebase-client";
@@ -20,8 +21,20 @@ export default function GoogleSignInButton() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } catch {
-      setError("Sign in failed. Please try again.");
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        if (err.code === "auth/popup-closed-by-user") {
+          setError("Sign-in popup closed before completion.");
+        } else if (err.code === "auth/popup-blocked") {
+          setError("Popup blocked. Please allow popups and try again.");
+        } else if (err.code === "auth/network-request-failed") {
+          setError("Network error during sign in. Please retry.");
+        } else {
+          setError("Sign in failed. Please try again.");
+        }
+      } else {
+        setError("Sign in failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

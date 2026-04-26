@@ -51,17 +51,24 @@ function renderContent(content: string): React.ReactNode[] {
     .flatMap((block, i) => {
     const trimmedBlock = block.trim();
     if (!trimmedBlock) return [];
+    const blockKey = `${trimmedBlock.slice(0, 40)}-${i}`;
 
     if (trimmedBlock.startsWith("## ")) {
-      return [<h2 key={`h2-${i}`}>{trimmedBlock.replace("## ", "")}</h2>];
+      return [<h2 key={`h2-${blockKey}`}>{trimmedBlock.replace("## ", "")}</h2>];
     }
 
-    if (trimmedBlock.includes("\n- ") || trimmedBlock.startsWith("- ")) {
-      const items = trimmedBlock.split("\n").filter((line) => line.trim().startsWith("- "));
+    const blockLines = trimmedBlock
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const isBulletList = blockLines.length > 0 && blockLines.every((line) => /^-\s+/.test(line));
+
+    if (isBulletList) {
+      const items = blockLines;
       return [
-        <ul key={`ul-${i}`}>
+        <ul key={`ul-${blockKey}`}>
           {items.map((item, j) => (
-            <li key={`li-${i}-${j}`}>{parseBold(item.trim().replace(/^- /, ""))}</li>
+            <li key={`li-${blockKey}-${j}`}>{parseBold(item.replace(/^-\s+/, ""))}</li>
           ))}
         </ul>
       ];
@@ -70,7 +77,7 @@ function renderContent(content: string): React.ReactNode[] {
     if (trimmedBlock.startsWith("|")) {
       const rows = trimmedBlock
         .split("\n")
-        .filter((row) => row.startsWith("|") && !row.match(/^\|[-\s|]+\|$/));
+        .filter((row) => row.startsWith("|") && !row.match(/^\|[\-\s|]+\|$/));
 
       if (rows.length === 0) return [];
 
@@ -78,12 +85,15 @@ function renderContent(content: string): React.ReactNode[] {
       const dataRows = rows.slice(1).map((row) => row.split("|").filter(Boolean).map((cell) => cell.trim()));
 
       return [
-        <div key={`table-${i}`} className="overflow-x-auto">
+        <div key={`table-${blockKey}`} className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr>
                 {headers.map((header, headerIndex) => (
-                  <th key={`th-${i}-${headerIndex}`} className="border border-zinc-300 px-3 py-2 text-left dark:border-zinc-700">
+                  <th
+                    key={`th-${blockKey}-${headerIndex}`}
+                    className="border border-zinc-300 px-3 py-2 text-left dark:border-zinc-700"
+                  >
                     {parseBold(header)}
                   </th>
                 ))}
@@ -91,9 +101,12 @@ function renderContent(content: string): React.ReactNode[] {
             </thead>
             <tbody>
               {dataRows.map((row, rowIndex) => (
-                <tr key={`tr-${i}-${rowIndex}`}>
+                <tr key={`tr-${blockKey}-${rowIndex}`}>
                   {row.map((cell, cellIndex) => (
-                    <td key={`td-${i}-${rowIndex}-${cellIndex}`} className="border border-zinc-300 px-3 py-2 dark:border-zinc-700">
+                    <td
+                      key={`td-${blockKey}-${rowIndex}-${cellIndex}`}
+                      className="border border-zinc-300 px-3 py-2 dark:border-zinc-700"
+                    >
                       {parseBold(cell)}
                     </td>
                   ))}
@@ -106,7 +119,7 @@ function renderContent(content: string): React.ReactNode[] {
     }
 
     return [
-      <p key={`p-${i}`} className="leading-relaxed text-zinc-700 dark:text-zinc-300">
+      <p key={`p-${blockKey}`} className="leading-relaxed text-zinc-700 dark:text-zinc-300">
         {parseBold(trimmedBlock)}
       </p>
     ];
