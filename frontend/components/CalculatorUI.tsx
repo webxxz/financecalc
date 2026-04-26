@@ -257,6 +257,12 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
           balance: number;
         }>)
       : null;
+  const monthlyEmi = result?.result["monthly_emi"];
+  const totalInterest = result?.result["total_interest"];
+  const totalPayment = result?.result["total_payment"];
+  const showEmiChart =
+    typeof monthlyEmi === "number" && typeof totalInterest === "number" && typeof totalPayment === "number";
+  const principal = showEmiChart ? totalPayment - totalInterest : 0;
 
   return (
     <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -392,11 +398,11 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
 
           <ShareResult title={`${title} Result`} summary={result.summary} />
 
-          {typeof result.result["monthly_emi"] === "number" && typeof result.result["total_interest"] === "number" ? (
+          {showEmiChart ? (
             <ChartCard title="EMI Payment Breakdown">
               <EmiBreakdownChart
-                principal={(result.result["total_payment"] as number) - (result.result["total_interest"] as number)}
-                totalInterest={result.result["total_interest"] as number}
+                principal={principal}
+                totalInterest={totalInterest}
                 currency={currency}
               />
             </ChartCard>
