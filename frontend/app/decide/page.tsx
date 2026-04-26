@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import ChatInterface from "@/components/ChatInterface";
 import { useUsage } from "@/lib/usage-context";
 
@@ -11,11 +11,11 @@ const SCENARIOS = ["rent_vs_buy", "debt_vs_invest", "lumpsum_vs_sip", "early_ret
 
 export default function DecidePage() {
   const { aiQueriesRemaining, isProUser } = useUsage();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   return (
     <section className="space-y-6">

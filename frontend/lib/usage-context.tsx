@@ -90,8 +90,16 @@ export function UsageProvider({ children }: { children: ReactNode }) {
   const [isProUser, setIsProUserState] = useState<boolean>(false);
 
   useEffect(() => {
-    setUsage(readUsage());
-    setIsProUserState(readProStatus());
+    const usageFromStorage = readUsage();
+    const proStatus = readProStatus();
+    const timeoutId = window.setTimeout(() => {
+      setUsage(usageFromStorage);
+      setIsProUserState(proStatus);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   const aiQueriesRemaining = isProUser ? Infinity : Math.max(0, AI_LIMIT - usage.aiQueries);
