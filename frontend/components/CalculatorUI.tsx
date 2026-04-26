@@ -112,6 +112,7 @@ const MONEY_FIELDS = new Set([
   "total_payment",
   "total_tax",
 ]);
+const EXCLUDED_FROM_TABLE = new Set(["yearly_schedule", "yearly_growth", "yearly_comparison"]);
 
 function formatINRCurrency(value: number): string {
   const isNegative = value < 0;
@@ -369,12 +370,14 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
           <div>
             <h3 className="text-lg font-semibold">Result</h3>
             <div className="mt-2 space-y-2 rounded-md bg-zinc-100 p-3 text-sm dark:bg-zinc-950">
-              {Object.entries(result.result).map(([key, value]) => (
+              {Object.entries(result.result)
+                .filter(([key]) => !EXCLUDED_FROM_TABLE.has(key))
+                .map(([key, value]) => (
                 <div key={key} className="flex items-start justify-between gap-4">
                   <span className="font-medium text-zinc-700 capitalize dark:text-zinc-300">{key.replace(/_/g, " ")}</span>
                   <span className="text-right">{formatFieldValue(key, value, currency)}</span>
                 </div>
-              ))}
+                ))}
             </div>
           </div>
 
