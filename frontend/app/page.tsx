@@ -62,6 +62,12 @@ export default function Home() {
           { href: "/calculators/home-loan-eligibility", title: "Home Loan Eligibility", desc: "Max loan based on income and FOIR." },
           { href: "/calculators/loan-interest-rate", title: "Interest Rate Finder", desc: "Reverse-calculate your loan rate." },
           { href: "/calculators/loan-tenure", title: "Loan Tenure Calculator", desc: "Find repayment period from EMI." },
+          { href: "/calculators/compound-interest", title: "Compound Interest", desc: "Watch money grow with compounding." },
+          { href: "/calculators/inflation", title: "Inflation Calculator", desc: "Purchasing power over time." },
+          { href: "/calculators/net-worth", title: "Net Worth Calculator", desc: "Assets minus liabilities." },
+          { href: "/calculators/budget", title: "Budget Calculator", desc: "50-30-20 rule checker." },
+          { href: "/calculators/debt-payoff", title: "Debt Payoff", desc: "Snowball vs avalanche strategy." },
+          { href: "/calculators/currency-converter", title: "Currency Converter", desc: "Live exchange rates." },
         ].map((card) => (
           <Link
             key={card.href}

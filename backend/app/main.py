@@ -11,7 +11,7 @@ from slowapi.util import get_remote_address
 
 from app.core.config import get_settings
 from app.core.logging import configure_logging
-from app.routers import ai, calculators, contact, decision, exchange, health, mortgage_refinance_router, user, whatif
+from app.routers import ai, calculators, contact, currency_converter, decision, exchange, health, mortgage_refinance_router, user, whatif
 from app.schemas.common import ErrorResponse
 from app.utils.limiter import limiter
 from app.utils.rate_limit import InMemoryRateLimiter
@@ -173,6 +173,7 @@ app.include_router(health.router, prefix=settings.api_v1_prefix)
 app.include_router(calculators.router, prefix=settings.api_v1_prefix)
 app.include_router(mortgage_refinance_router.router, prefix=settings.api_v1_prefix)
 app.include_router(exchange.router, prefix=settings.api_v1_prefix)
+app.include_router(currency_converter.router, prefix=settings.api_v1_prefix)
 app.include_router(ai.router, prefix=settings.api_v1_prefix)
 app.include_router(contact.router, prefix=settings.api_v1_prefix)
 app.include_router(user.router, prefix=settings.api_v1_prefix)

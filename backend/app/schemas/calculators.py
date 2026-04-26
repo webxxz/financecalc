@@ -97,3 +97,55 @@ class RetirementWithdrawalRequest(BaseModel):
     annual_spending_needed: PositiveFloat
     current_retirement_savings: float = Field(ge=0)
     safe_withdrawal_rate: float = Field(default=4, ge=1, le=10)
+
+
+class CompoundInterestRequest(BaseModel):
+    principal: float = Field(gt=0)
+    annual_rate: float = Field(ge=0, le=100)
+    tenure_years: float = Field(gt=0)
+    compounding_frequency: int = Field(default=12, ge=1)
+
+
+class InflationRequest(BaseModel):
+    current_amount: float = Field(gt=0)
+    annual_inflation_rate: float = Field(ge=0, le=100)
+    tenure_years: int = Field(ge=1)
+
+
+class NetWorthRequest(BaseModel):
+    cash_and_savings: float = Field(default=0, ge=0)
+    investments: float = Field(default=0, ge=0)
+    property_value: float = Field(default=0, ge=0)
+    vehicle_value: float = Field(default=0, ge=0)
+    other_assets: float = Field(default=0, ge=0)
+    home_loan_outstanding: float = Field(default=0, ge=0)
+    personal_loan_outstanding: float = Field(default=0, ge=0)
+    car_loan_outstanding: float = Field(default=0, ge=0)
+    credit_card_debt: float = Field(default=0, ge=0)
+    other_liabilities: float = Field(default=0, ge=0)
+
+
+class BudgetRequest(BaseModel):
+    monthly_income: float = Field(gt=0)
+    needs: float = Field(ge=0)
+    wants: float = Field(ge=0)
+    savings: float = Field(ge=0)
+
+
+class DebtPayoffRequest(BaseModel):
+    monthly_payment_budget: float = Field(gt=0)
+    debt_1_name: str = Field(default="Debt 1")
+    debt_1_balance: float = Field(ge=0)
+    debt_1_rate: float = Field(ge=0, le=100)
+    debt_2_name: str = Field(default="Debt 2")
+    debt_2_balance: float = Field(default=0, ge=0)
+    debt_2_rate: float = Field(default=0, ge=0, le=100)
+    debt_3_name: str = Field(default="Debt 3")
+    debt_3_balance: float = Field(default=0, ge=0)
+    debt_3_rate: float = Field(default=0, ge=0, le=100)
+
+
+class CurrencyConvertRequest(BaseModel):
+    amount: float = Field(gt=0)
+    from_currency: str = Field(min_length=3, max_length=3)
+    to_currency: str = Field(min_length=3, max_length=3)
