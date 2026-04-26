@@ -257,10 +257,10 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
           balance: number;
         }>)
       : null;
-  const monthlyEmi = typeof result?.result["monthly_emi"] === "number" ? result.result["monthly_emi"] : undefined;
   const totalInterest = typeof result?.result["total_interest"] === "number" ? result.result["total_interest"] : undefined;
   const totalPayment = typeof result?.result["total_payment"] === "number" ? result.result["total_payment"] : undefined;
-  const showEmiChart = monthlyEmi !== undefined && totalInterest !== undefined && totalPayment !== undefined;
+  const showEmiChart =
+    typeof result?.result["monthly_emi"] === "number" && totalInterest !== undefined && totalPayment !== undefined;
   const emiChartData = showEmiChart ? { principal: totalPayment - totalInterest, totalInterest } : null;
 
   return (
