@@ -281,8 +281,12 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
       </div>
 
       <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
-        {fields.map((field) => (
-          <div key={field.name} className="text-sm">
+        {fields.map((field) => {
+          const sliderEnabled = field.showSlider && field.type !== "text";
+          const currentValue = values[field.name] ?? (sliderEnabled ? String(field.min ?? 0) : "");
+
+          return (
+            <div key={field.name} className="text-sm">
             <label htmlFor={`${field.name}-input`} className="mb-1 block font-medium">
               {field.label}
             </label>
@@ -293,19 +297,19 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
               max={field.max}
               step={field.step ?? "any"}
               placeholder={field.placeholder}
-              value={values[field.name] ?? ""}
+              value={currentValue}
               onChange={(e) => setValues((prev) => ({ ...prev, [field.name]: e.target.value }))}
               required
               className="w-full rounded-md border border-zinc-300 px-3 py-2 outline-none ring-offset-2 focus:ring-2 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-950"
             />
-            {field.showSlider && field.type !== "text" ? (
+            {sliderEnabled ? (
               <div className="mt-2">
                 <div className="mb-1 flex items-center justify-between">
                   <span className="text-xs text-zinc-600 dark:text-zinc-300">
                     {field.label}
                   </span>
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800">
-                    {values[field.name] ?? ""}
+                    {currentValue}
                   </span>
                 </div>
                 <input
@@ -314,15 +318,16 @@ export default function CalculatorUI({ title, description, endpoint, fields }: C
                   min={field.min}
                   max={field.max}
                   step={field.step ?? "any"}
-                  value={values[field.name] ?? field.min ?? 0}
+                  value={currentValue}
                   onChange={(e) => setValues((prev) => ({ ...prev, [field.name]: e.target.value }))}
                   aria-label={`${field.label} value`}
                   className="mt-1 w-full accent-indigo-600"
                 />
               </div>
             ) : null}
-          </div>
-        ))}
+            </div>
+          );
+        })}
 
         <div className="md:col-span-2">
           <button
