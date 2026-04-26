@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import ChatInterface from "@/components/ChatInterface";
-import ScenarioCard from "@/components/ScenarioCard";
 import { useUsage } from "@/lib/usage-context";
+
+const ScenarioCard = dynamic(() => import("@/components/ScenarioCard"), { ssr: false });
+const SCENARIOS = ["rent_vs_buy", "debt_vs_invest", "lumpsum_vs_sip", "early_retirement", "loan_comparison"] as const;
 
 export default function DecidePage() {
   const { aiQueriesRemaining, isProUser } = useUsage();
@@ -31,8 +34,9 @@ export default function DecidePage() {
       </div>
       <ChatInterface />
       <div className="grid gap-4 md:grid-cols-2">
-        <ScenarioCard scenario="rent_vs_buy" />
-        <ScenarioCard scenario="debt_vs_invest" />
+        {SCENARIOS.map((scenario) => (
+          <ScenarioCard key={scenario} scenario={scenario} />
+        ))}
       </div>
     </section>
   );

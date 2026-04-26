@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import CalculatorUI from "@/components/CalculatorUI";
 import FAQSchema from "@/components/FAQSchema";
-
-const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
 
 export const metadata: Metadata = {
   title: "Credit Card Payoff Calculator",
@@ -68,10 +65,6 @@ export default function CreditCardPayoffPage() {
         </p>
       </article>
 
-      <AffiliateSection
-        title="Debt Consolidation Options"
-        description="Affiliate placeholder: compare balance transfer cards and consolidation offers by APR, fees, and payoff horizon."
-      />
     </div>
   );
 }

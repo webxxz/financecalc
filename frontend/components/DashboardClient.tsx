@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { type User, onAuthStateChanged } from "firebase/auth";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ type DashboardHistory = {
 };
 
 const QUICK_PROGRESS_INCREMENT = 0.1;
+const GoogleSignInButton = dynamic(() => import("@/components/GoogleSignInButton"), { ssr: false });
 
 export default function DashboardClient() {
   const [goals, setGoals] = useState<DashboardGoal[]>([]);
@@ -137,7 +139,16 @@ export default function DashboardClient() {
   };
 
   if (!user) {
-    return <p className="text-sm text-zinc-600 dark:text-zinc-300">Sign in with Firebase to view your dashboard.</p>;
+    return (
+      <div className="space-y-4 rounded-2xl border border-zinc-700 p-8 text-center">
+        <div className="text-4xl">🔐</div>
+        <h3 className="text-lg font-semibold">Sign in to view your dashboard</h3>
+        <p className="text-sm text-zinc-400">
+          Access your saved calculations, track goals, and monitor your financial progress.
+        </p>
+        <GoogleSignInButton />
+      </div>
+    );
   }
 
   return (

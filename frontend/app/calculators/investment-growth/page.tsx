@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 
 import CalculatorUI from "@/components/CalculatorUI";
 import FAQSchema from "@/components/FAQSchema";
-
-const AffiliateSection = dynamic(() => import("@/components/AffiliateSection"));
 
 export const metadata: Metadata = {
   title: "Investment Growth Calculator",
@@ -69,10 +66,6 @@ export default function InvestmentGrowthPage() {
         </p>
       </article>
 
-      <AffiliateSection
-        title="Investment Platform Comparison"
-        description="Affiliate placeholder: compare investment platforms by fees, product coverage, and automation tools."
-      />
     </div>
   );
 }
