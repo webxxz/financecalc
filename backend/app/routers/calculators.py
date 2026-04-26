@@ -238,6 +238,6 @@ async def calculator_catalog() -> dict:
             "Insurance": with_status(["life-cover", "health-premium"]),
             "Currency & Global Tools": with_status(["exchange-rate", "currency-converter", "purchasing-power"]),
             "Advanced Finance": with_status(["irr", "npv"]),
-            "Utilities": with_status(["inflation", "unit-converter"]),
+            "Utilities": with_status(["unit-converter"]),
         }
     }
